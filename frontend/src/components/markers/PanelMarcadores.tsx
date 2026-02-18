@@ -22,7 +22,7 @@ interface Marcador {
 
 interface PanelMarcadoresProps {
     audienciaId: string
-    onClickMarcador?: (timestamp: number) => void
+    onSeekAudio?: (timestamp: number) => void
 }
 
 // Indicadores visuales minimalistas (sin emojis)
@@ -67,7 +67,7 @@ const MarkerShape = ({ forma, color, size = 12 }: { forma: string; color: string
 
 export default function PanelMarcadores({
     audienciaId,
-    onClickMarcador,
+    onSeekAudio,
 }: PanelMarcadoresProps) {
     const [marcadores, setMarcadores] = useState<Marcador[]>([])
     const [nuevaNota, setNuevaNota] = useState('')
@@ -222,7 +222,7 @@ export default function PanelMarcadores({
                                 key={m.id}
                                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all group"
                                 style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}
-                                onClick={() => onClickMarcador?.(m.timestamp)}
+                                onClick={() => onSeekAudio?.(m.timestamp)}
                             >
                                 <MarkerShape forma={config.forma} color={config.color} size={10} />
                                 <span

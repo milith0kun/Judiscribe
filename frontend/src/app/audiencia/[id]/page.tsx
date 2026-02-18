@@ -416,7 +416,7 @@ export default function PaginaTranscripcion() {
                         {pestanaSidebar === 'marcadores' && (
                             <PanelMarcadores
                                 audienciaId={audienciaId}
-                                onClickMarcador={handleClickMarcador}
+                                onSeekAudio={handleClickMarcador}
                             />
                         )}
                         {pestanaSidebar === 'frases' && (
