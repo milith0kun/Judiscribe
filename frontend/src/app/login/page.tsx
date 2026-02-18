@@ -1,20 +1,40 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/stores/authStore'
 
 export default function LoginPage() {
     const router = useRouter()
-    const { login, isLoading, error } = useAuthStore()
+    const searchParams = useSearchParams()
+    const { login, isLoading, error, user } = useAuthStore()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+
+    // Redirigir si ya está autenticado
+    useEffect(() => {
+        if (user) {
+            const redirect = searchParams.get('redirect') || '/'
+            router.push(redirect)
+        }
+    }, [user, router, searchParams])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         const success = await login({ email, password })
         if (success) {
-            router.push('/')
+            const redirect = searchParams.get('redirect') || '/'
+            router.push(redirect)
+        }
+    }
+
+    const usarCredencialesDemo = (tipo: 'digitador' | 'admin') => {
+        if (tipo === 'digitador') {
+            setEmail('digitador@judiscribe.pe')
+            setPassword('Digitador2024!')
+        } else {
+            setEmail('admin@judiscribe.pe')
+            setPassword('JudiScribe2024!')
         }
     }
 
@@ -127,6 +147,41 @@ export default function LoginPage() {
                             )}
                         </button>
                     </form>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-3 my-6">
+                        <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }} />
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Acceso rápido</span>
+                        <div className="flex-1 h-px" style={{ background: 'var(--border-subtle)' }} />
+                    </div>
+
+                    {/* Quick access buttons */}
+                    <div className="space-y-3">
+                        <button
+                            type="button"
+                            onClick={() => usarCredencialesDemo('digitador')}
+                            className="w-full px-4 py-3 rounded-xl text-sm transition-all text-left"
+                            style={{
+                                background: 'var(--bg-primary)',
+                                border: '1px solid var(--border-default)',
+                                color: 'var(--text-primary)',
+                            }}>
+                            <div className="font-medium mb-0.5" style={{ color: 'var(--text-primary)' }}>Digitador de Prueba</div>
+                            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>digitador@judiscribe.pe</div>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => usarCredencialesDemo('admin')}
+                            className="w-full px-4 py-3 rounded-xl text-sm transition-all text-left"
+                            style={{
+                                background: 'var(--bg-primary)',
+                                border: '1px solid var(--border-default)',
+                                color: 'var(--text-primary)',
+                            }}>
+                            <div className="font-medium mb-0.5" style={{ color: 'var(--text-primary)' }}>Administrador</div>
+                            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>admin@judiscribe.pe</div>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Footer */}

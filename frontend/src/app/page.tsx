@@ -1,8 +1,8 @@
 'use client'
 
 /**
- * Página principal — Dashboard simplificado sin autenticación.
- * Lista audiencias y permite crear/acceder al Canvas directamente.
+ * Página principal — Dashboard protegido con autenticación.
+ * Lista audiencias y permite crear/acceder al Canvas.
  *
  * UI Minimalista: sin emojis, tipografía como jerarquía.
  */
@@ -10,6 +10,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/api'
 import type { Audiencia } from '@/types'
+import { AuthGuard } from '@/components/auth/AuthGuard'
+import { useAuthStore } from '@/stores/authStore'
 
 const ESTADO_COLORS: Record<string, { bg: string; text: string; label: string }> = {
     pendiente: { bg: 'rgba(113, 128, 150, 0.1)', text: '#718096', label: 'Pendiente' },
@@ -21,6 +23,7 @@ const ESTADO_COLORS: Record<string, { bg: string; text: string; label: string }>
 
 export default function DashboardPage() {
     const router = useRouter()
+    const { user, logout } = useAuthStore()
     const [audiencias, setAudiencias] = useState<Audiencia[]>([])
     const [loading, setLoading] = useState(true)
 
@@ -46,26 +49,45 @@ export default function DashboardPage() {
     const pendientes = audiencias.filter((a) => a.estado === 'pendiente' || a.estado === 'en_curso').length
     const enRevision = audiencias.filter((a) => a.estado === 'en_revision').length
 
+    const handleLogout = () => {
+        logout()
+        router.push('/login')
+    }
+
     return (
-        <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
-            {/* Header */}
-            <header className="px-8 py-6 flex items-center justify-between"
-                style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                <div className="flex items-center gap-4">
-                    <div className="logo-monogram">J</div>
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
-                            JudiScribe
-                        </h1>
-                        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sistema de Transcripción Judicial</p>
+        <AuthGuard>
+            <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
+                {/* Header */}
+                <header className="px-8 py-6 flex items-center justify-between"
+                    style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                    <div className="flex items-center gap-4">
+                        <div className="logo-monogram">J</div>
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+                                JudiScribe
+                            </h1>
+                            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sistema de Transcripción Judicial</p>
+                        </div>
                     </div>
-                </div>
-                <button
-                    onClick={() => router.push('/audiencia/demo')}
-                    className="btn-primary">
-                    Iniciar
-                </button>
-            </header>
+                    <div className="flex items-center gap-4">
+                        <div className="text-right">
+                            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{user?.nombre}</p>
+                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{user?.rol}</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => router.push('/audiencia/demo')}
+                                className="btn-primary">
+                                Iniciar
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="btn-secondary">
+                                Salir
+                            </button>
+                        </div>
+                    </div>
+                </header>
 
             <main className="max-w-6xl mx-auto px-8 py-10">
                 {/* Stats - Números grandes minimalistas */}
@@ -167,5 +189,6 @@ export default function DashboardPage() {
                 )}
             </main>
         </div>
+        </AuthGuard>
     )
 }
