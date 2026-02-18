@@ -24,25 +24,44 @@ interface Hablante {
 
 interface PanelHablantesProps {
     audienciaId: string
-    /** IDs de speakers detectados en la sesión actual */
+    /** IDs de speakers detectados en la sesión actual (Deepgram) */
     speakersDetectados: string[]
     /** Callback cuando se actualiza un hablante */
     onHablanteActualizado?: (hablante: Hablante) => void
+    /** Si true, no llama a la API y gestiona todo localmente */
+    modoDemo?: boolean
+    /** Hablantes pre-cargados para modo demo */
+    hablantesIniciales?: Hablante[]
 }
 
 export default function PanelHablantes({
     audienciaId,
     speakersDetectados,
     onHablanteActualizado,
+    modoDemo = false,
+    hablantesIniciales = [],
 }: PanelHablantesProps) {
-    const [hablantes, setHablantes] = useState<Hablante[]>([])
+    const [hablantes, setHablantes] = useState<Hablante[]>(hablantesIniciales)
     const [editando, setEditando] = useState<string | null>(null)
     const [cargando, setCargando] = useState(false)
 
-    // Cargar hablantes existentes
+    // Cargar hablantes existentes (solo si NO es demo)
     useEffect(() => {
-        cargarHablantes()
-    }, [audienciaId])
+        if (!modoDemo) {
+            cargarHablantes()
+        }
+    }, [audienciaId, modoDemo])
+
+    // Actualizar hablantes iniciales si cambian (para demo)
+    useEffect(() => {
+        if (modoDemo && hablantesIniciales.length > 0) {
+            // Merge con los actuales para no perder ediciones locales
+            setHablantes(prev => {
+                const map = new Map(prev.map(h => [h.speaker_id, h]))
+                return hablantesIniciales.map(h => map.get(h.speaker_id) || h)
+            })
+        }
+    }, [hablantesIniciales, modoDemo])
 
     // Auto-crear hablantes cuando se detectan nuevos speakers
     useEffect(() => {
@@ -50,17 +69,33 @@ export default function PanelHablantes({
         const nuevos = speakersDetectados.filter((id) => !idsExistentes.includes(id))
 
         if (nuevos.length > 0) {
-            Promise.all(
-                nuevos.map((speakerId) =>
-                    api.post(`/api/audiencias/${audienciaId}/hablantes`, {
-                        speaker_id: speakerId,
-                        rol: 'otro',
-                        orden: hablantes.length + nuevos.indexOf(speakerId),
-                    })
-                )
-            ).then(() => cargarHablantes())
+            if (modoDemo) {
+                // Modo demo: añadir localmente
+                const nuevosHablantes: Hablante[] = nuevos.map((id, idx) => ({
+                    id: `demo-${Date.now()}-${idx}`,
+                    speaker_id: id,
+                    rol: 'participante',
+                    etiqueta: id,
+                    nombre: '',
+                    color: '#999999', // Color default, idealmente rotar
+                    orden: hablantes.length + idx,
+                    auto_detectado: true
+                }))
+                setHablantes(prev => [...prev, ...nuevosHablantes])
+            } else {
+                // Modo API: POST
+                Promise.all(
+                    nuevos.map((speakerId) =>
+                        api.post(`/api/audiencias/${audienciaId}/hablantes`, {
+                            speaker_id: speakerId,
+                            rol: 'otro',
+                            orden: hablantes.length + nuevos.indexOf(speakerId),
+                        })
+                    )
+                ).then(() => cargarHablantes())
+            }
         }
-    }, [speakersDetectados, hablantes, audienciaId])
+    }, [speakersDetectados, hablantes, audienciaId, modoDemo])
 
     const cargarHablantes = async () => {
         try {
@@ -72,6 +107,13 @@ export default function PanelHablantes({
     }
 
     const actualizarRol = async (hablanteId: string, nuevoRol: string) => {
+        if (modoDemo) {
+            setHablantes(prev => prev.map(h =>
+                h.id === hablanteId ? { ...h, rol: nuevoRol, etiqueta: nuevoRol.toUpperCase() } : h
+            ))
+            return
+        }
+
         setCargando(true)
         try {
             const { data } = await api.put(
@@ -91,6 +133,13 @@ export default function PanelHablantes({
     }
 
     const actualizarNombre = async (hablanteId: string, nombre: string) => {
+        if (modoDemo) {
+            setHablantes(prev => prev.map(h =>
+                h.id === hablanteId ? { ...h, nombre } : h
+            ))
+            return
+        }
+
         try {
             const { data } = await api.put(
                 `/api/audiencias/${audienciaId}/hablantes/${hablanteId}`,
