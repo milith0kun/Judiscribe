@@ -1,0 +1,146 @@
+/**
+ * TypeScript types for JudiScribe frontend.
+ */
+
+// ── Auth ──────────────────────────────────────────────
+export interface User {
+    id: string
+    email: string
+    nombre: string
+    rol: 'admin' | 'transcriptor' | 'supervisor'
+    activo: boolean
+}
+
+export interface LoginRequest {
+    email: string
+    password: string
+}
+
+export interface TokenResponse {
+    access_token: string
+    token_type: string
+}
+
+// ── Audiencia ─────────────────────────────────────────
+export type EstadoAudiencia = 'pendiente' | 'en_curso' | 'transcrita' | 'en_revision' | 'finalizada'
+
+export interface Audiencia {
+    id: string
+    expediente: string
+    juzgado: string
+    tipo_audiencia: string
+    instancia: string
+    fecha: string
+    hora_inicio: string
+    hora_fin: string | null
+    sala: string | null
+    delito: string | null
+    imputado_nombre: string | null
+    agraviado_nombre: string | null
+    especialista_causa: string | null
+    especialista_audiencia: string | null
+    estado: EstadoAudiencia
+    audio_path: string | null
+    audio_duration_seconds: number | null
+    deepgram_session_id: string | null
+    created_by: string
+    created_at: string
+    updated_at: string
+}
+
+export interface AudienciaCreate {
+    expediente: string
+    juzgado: string
+    tipo_audiencia: string
+    instancia: string
+    fecha: string
+    hora_inicio: string
+    hora_fin?: string
+    sala?: string
+    delito?: string
+    imputado_nombre?: string
+    agraviado_nombre?: string
+    especialista_causa?: string
+    especialista_audiencia?: string
+}
+
+// ── Segmento ──────────────────────────────────────────
+export interface WordTimestamp {
+    word: string
+    start: number
+    end: number
+    confidence: number
+}
+
+export interface Segmento {
+    id: string
+    audiencia_id: string
+    speaker_id: string
+    texto_ia: string
+    texto_editado: string | null
+    timestamp_inicio: number
+    timestamp_fin: number
+    confianza: number
+    es_provisional: boolean
+    editado_por_usuario: boolean
+    fuente: 'streaming' | 'batch'
+    orden: number
+    palabras_json: WordTimestamp[] | null
+}
+
+// ── WebSocket Messages ────────────────────────────────
+export interface TranscriptMessage {
+    type: 'transcript'
+    is_final: boolean
+    speaker: string
+    text: string
+    confidence: number
+    start: number
+    end: number
+    words: WordTimestamp[]
+}
+
+export interface StatusMessage {
+    type: 'status'
+    status: 'connected' | 'reconnecting' | 'disconnected'
+    message: string
+}
+
+export interface SuggestionMessage {
+    type: 'suggestion'
+    segment_order: number
+    original_word: string
+    suggested_word: string
+    position: { start: number; end: number }
+    confidence: number
+    category: string
+}
+
+export type WSMessage = TranscriptMessage | StatusMessage | SuggestionMessage
+
+// ── Speaker Roles ─────────────────────────────────────
+export interface SpeakerRole {
+    id: number
+    rol: string
+    etiqueta: string
+    color: string
+}
+
+// Colores optimizados para tema claro
+export const SPEAKER_ROLES: SpeakerRole[] = [
+    { id: 1, rol: 'Juez', etiqueta: 'JUEZ:', color: '#2563EB' },
+    { id: 2, rol: 'Juez Director de Debates', etiqueta: 'JUEZ SUPERIOR – DIRECTOR DE DEBATES:', color: '#1D4ED8' },
+    { id: 3, rol: 'Jueces del Colegiado', etiqueta: 'JUECES SUPERIORES:', color: '#3B82F6' },
+    { id: 4, rol: 'Fiscal', etiqueta: 'REPRESENTANTE DEL MINISTERIO PÚBLICO:', color: '#059669' },
+    { id: 5, rol: 'Defensa del imputado', etiqueta: 'DEFENSA DEL SENTENCIADO (A):', color: '#DC2626' },
+    { id: 6, rol: 'Defensa del agraviado', etiqueta: 'DEFENSA DE LA PARTE AGRAVIADA:', color: '#EA580C' },
+    { id: 7, rol: 'Imputado/Acusado', etiqueta: 'IMPUTADO:', color: '#D97706' },
+    { id: 8, rol: 'Agraviado/Víctima', etiqueta: 'AGRAVIADO:', color: '#7C3AED' },
+    { id: 9, rol: 'Víctima', etiqueta: 'VÍCTIMA:', color: '#8B5CF6' },
+    { id: 10, rol: 'Asesor de Víctimas', etiqueta: 'ASESOR JURÍDICO DE VÍCTIMAS:', color: '#BE185D' },
+    { id: 11, rol: 'Perito', etiqueta: 'PERITO:', color: '#0891B2' },
+    { id: 12, rol: 'Testigo', etiqueta: 'TESTIGO:', color: '#16A34A' },
+    { id: 13, rol: 'Asistente/Especialista', etiqueta: 'ASISTENTE DE AUDIENCIA:', color: '#64748B' },
+    { id: 14, rol: 'Partes en general', etiqueta: 'PARTES PROCESALES:', color: '#78716C' },
+    { id: 15, rol: 'Otro', etiqueta: 'OTRO:', color: '#6B7280' },
+]

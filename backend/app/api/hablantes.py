@@ -1,0 +1,163 @@
+"""
+API de Hablantes — gestionar los participantes de una audiencia.
+
+Cada hablante corresponde a un speaker_id de Deepgram.
+El digitador asigna roles judiciales (juez, fiscal, defensa, etc.).
+"""
+import uuid
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import get_current_user
+from app.database import get_db
+from app.models.hablante import Hablante
+from app.models.usuario import Usuario
+from app.schemas.hablante import HablanteCreate, HablanteUpdate, HablanteResponse
+
+router = APIRouter(prefix="/api/audiencias/{audiencia_id}/hablantes", tags=["hablantes"])
+
+# ── Roles disponibles con sus etiquetas y colores por defecto ──
+ROLES_CONFIG = {
+    "juez":              {"etiqueta": "JUEZ:",                                             "color": "#1B3A5C"},
+    "juez_director":     {"etiqueta": "JUEZ SUPERIOR – DIRECTOR DE DEBATES:",              "color": "#1B3A5C"},
+    "jueces_colegiado":  {"etiqueta": "JUECES SUPERIORES:",                                "color": "#2C5282"},
+    "fiscal":            {"etiqueta": "REPRESENTANTE DEL MINISTERIO PÚBLICO:",             "color": "#2D6A4F"},
+    "defensa_imputado":  {"etiqueta": "DEFENSA DEL SENTENCIADO (A):",                      "color": "#9B2226"},
+    "defensa_agraviado": {"etiqueta": "DEFENSA DE LA PARTE AGRAVIADA:",                    "color": "#B44D12"},
+    "imputado":          {"etiqueta": "IMPUTADO:",                                         "color": "#BC6C25"},
+    "agraviado":         {"etiqueta": "AGRAVIADO:",                                        "color": "#6B21A8"},
+    "victima":           {"etiqueta": "VÍCTIMA:",                                          "color": "#7C3AED"},
+    "asesor_victimas":   {"etiqueta": "ASESOR JURÍDICO DE VÍCTIMAS:",                     "color": "#DB2777"},
+    "perito":            {"etiqueta": "PERITO:",                                           "color": "#0E7490"},
+    "testigo":           {"etiqueta": "TESTIGO:",                                          "color": "#65A30D"},
+    "asistente":         {"etiqueta": "ASISTENTE DE AUDIENCIA:",                           "color": "#64748B"},
+    "partes_general":    {"etiqueta": "PARTES PROCESALES:",                                "color": "#78716C"},
+    "otro":              {"etiqueta": "OTRO:",                                             "color": "#94A3B8"},
+}
+
+
+@router.get("/roles")
+async def listar_roles():
+    """Retorna la lista de roles judiciales disponibles con etiquetas y colores."""
+    return [
+        {"rol": rol, "etiqueta": config["etiqueta"], "color": config["color"]}
+        for rol, config in ROLES_CONFIG.items()
+    ]
+
+
+@router.get("", response_model=list[HablanteResponse])
+async def listar_hablantes(
+    audiencia_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _usuario: Usuario = Depends(get_current_user),
+):
+    """Lista todos los hablantes de una audiencia, ordenados."""
+    resultado = await db.execute(
+        select(Hablante)
+        .where(Hablante.audiencia_id == audiencia_id)
+        .order_by(Hablante.orden)
+    )
+    return resultado.scalars().all()
+
+
+@router.post("", response_model=HablanteResponse, status_code=201)
+async def crear_hablante(
+    audiencia_id: uuid.UUID,
+    datos: HablanteCreate,
+    db: AsyncSession = Depends(get_db),
+    _usuario: Usuario = Depends(get_current_user),
+):
+    """Crea un nuevo hablante (o lo detecta automáticamente vía WebSocket)."""
+    # Verificar si ya existe este speaker_id para esta audiencia
+    existente = await db.execute(
+        select(Hablante).where(
+            Hablante.audiencia_id == audiencia_id,
+            Hablante.speaker_id == datos.speaker_id,
+        )
+    )
+    if existente.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="El speaker_id ya existe para esta audiencia")
+
+    # Aplicar colores y etiquetas por defecto según el rol
+    config_rol = ROLES_CONFIG.get(datos.rol, ROLES_CONFIG["otro"])
+
+    hablante = Hablante(
+        audiencia_id=audiencia_id,
+        speaker_id=datos.speaker_id,
+        rol=datos.rol,
+        etiqueta=datos.etiqueta or config_rol["etiqueta"],
+        nombre=datos.nombre,
+        color=datos.color or config_rol["color"],
+        orden=datos.orden,
+        auto_detectado=False,
+    )
+    db.add(hablante)
+    await db.commit()
+    await db.refresh(hablante)
+    return hablante
+
+
+@router.put("/{hablante_id}", response_model=HablanteResponse)
+async def actualizar_hablante(
+    audiencia_id: uuid.UUID,
+    hablante_id: uuid.UUID,
+    datos: HablanteUpdate,
+    db: AsyncSession = Depends(get_db),
+    _usuario: Usuario = Depends(get_current_user),
+):
+    """Actualiza un hablante — usado para asignar rol judicial al speaker_id."""
+    resultado = await db.execute(
+        select(Hablante).where(
+            Hablante.id == hablante_id,
+            Hablante.audiencia_id == audiencia_id,
+        )
+    )
+    hablante = resultado.scalar_one_or_none()
+    if not hablante:
+        raise HTTPException(status_code=404, detail="Hablante no encontrado")
+
+    # Actualizar campos proporcionados
+    if datos.rol is not None:
+        hablante.rol = datos.rol
+        # Si cambia el rol, actualizar etiqueta y color con defaults
+        config_rol = ROLES_CONFIG.get(datos.rol, ROLES_CONFIG["otro"])
+        if datos.etiqueta is None:
+            hablante.etiqueta = config_rol["etiqueta"]
+        if datos.color is None:
+            hablante.color = config_rol["color"]
+    if datos.etiqueta is not None:
+        hablante.etiqueta = datos.etiqueta
+    if datos.nombre is not None:
+        hablante.nombre = datos.nombre
+    if datos.color is not None:
+        hablante.color = datos.color
+    if datos.orden is not None:
+        hablante.orden = datos.orden
+
+    await db.commit()
+    await db.refresh(hablante)
+    return hablante
+
+
+@router.delete("/{hablante_id}", status_code=204)
+async def eliminar_hablante(
+    audiencia_id: uuid.UUID,
+    hablante_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _usuario: Usuario = Depends(get_current_user),
+):
+    """Elimina un hablante."""
+    resultado = await db.execute(
+        select(Hablante).where(
+            Hablante.id == hablante_id,
+            Hablante.audiencia_id == audiencia_id,
+        )
+    )
+    hablante = resultado.scalar_one_or_none()
+    if not hablante:
+        raise HTTPException(status_code=404, detail="Hablante no encontrado")
+
+    await db.delete(hablante)
+    await db.commit()
