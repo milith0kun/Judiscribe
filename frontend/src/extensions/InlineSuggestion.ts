@@ -127,27 +127,27 @@ export const InlineSuggestion = Extension.create<InlineSuggestionOptions, Inline
         return {
             acceptSuggestion:
                 () =>
-                ({ editor, tr, dispatch }) => {
-                    const suggestion = this.storage.suggestion
-                    if (!suggestion) return false
+                    ({ editor, tr, dispatch }) => {
+                        const suggestion = this.storage.suggestion
+                        if (!suggestion) return false
 
-                    if (dispatch) {
-                        const { selection } = tr
-                        tr.insertText(suggestion, selection.to)
-                        this.storage.suggestion = null
-                    }
-                    return true
-                },
+                        if (dispatch) {
+                            const { selection } = tr
+                            tr.insertText(suggestion, selection.to)
+                            this.storage.suggestion = null
+                        }
+                        return true
+                    },
 
             dismissSuggestion:
                 () =>
-                () => {
-                    if (this.storage.suggestion) {
-                        this.storage.suggestion = null
-                        return true
-                    }
-                    return false
-                },
+                    () => {
+                        if (this.storage.suggestion) {
+                            this.storage.suggestion = null
+                            return true
+                        }
+                        return false
+                    },
         }
     },
 
@@ -171,7 +171,10 @@ export const InlineSuggestion = Extension.create<InlineSuggestionOptions, Inline
     },
 
     addProseMirrorPlugins() {
-        const extensionThis = this
+        // Capture references directly instead of aliasing 'this' (no-this-alias rule)
+        const storage = this.storage
+        const options = this.options
+        const getEditor = () => this.editor
 
         return [
             new Plugin({
@@ -182,7 +185,7 @@ export const InlineSuggestion = Extension.create<InlineSuggestionOptions, Inline
                         return DecorationSet.empty
                     },
                     apply(_tr, _oldState, _oldEditorState, newEditorState) {
-                        const suggestion = extensionThis.storage.suggestion
+                        const suggestion = storage.suggestion
                         if (!suggestion) {
                             return DecorationSet.empty
                         }
@@ -197,7 +200,7 @@ export const InlineSuggestion = Extension.create<InlineSuggestionOptions, Inline
                             selection.to,
                             () => {
                                 const span = document.createElement('span')
-                                span.className = extensionThis.options.suggestionClass || 'inline-suggestion'
+                                span.className = options.suggestionClass || 'inline-suggestion'
                                 span.textContent = suggestion
                                 span.setAttribute('data-suggestion', 'true')
                                 return span
@@ -223,22 +226,23 @@ export const InlineSuggestion = Extension.create<InlineSuggestionOptions, Inline
                         }
 
                         // Limpiar sugerencia anterior cuando se escribe
-                        extensionThis.storage.suggestion = null
+                        storage.suggestion = null
 
                         // Debounce para nueva sugerencia
-                        if (extensionThis.storage.debounceTimer) {
-                            clearTimeout(extensionThis.storage.debounceTimer)
+                        if (storage.debounceTimer) {
+                            clearTimeout(storage.debounceTimer)
                         }
 
-                        extensionThis.storage.debounceTimer = setTimeout(() => {
-                            if (extensionThis.editor) {
+                        storage.debounceTimer = setTimeout(() => {
+                            const currentEditor = getEditor()
+                            if (currentEditor) {
                                 triggerFetch(
-                                    extensionThis.editor,
-                                    extensionThis.options,
-                                    extensionThis.storage
+                                    currentEditor,
+                                    options,
+                                    storage
                                 )
                             }
-                        }, extensionThis.options.debounceMs)
+                        }, options.debounceMs)
                     },
                 }),
             }),
