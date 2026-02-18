@@ -56,7 +56,7 @@ function LoginForm() {
             <div className="relative z-10 w-full max-w-md px-4 sm:px-6">
                 {/* Logo / Brand */}
                 <div className="text-center mb-6 sm:mb-10 animate-fade-in">
-                    <div className="logo-monogram mx-auto mb-4 sm:mb-6" style={{ width: '48px', height: '48px', sm: { width: '56px', height: '56px' }, fontSize: '20px', sm: { fontSize: '24px' }, borderRadius: '12px' }}>
+                    <div className="logo-monogram mx-auto mb-4 sm:mb-6" style={{ width: '52px', height: '52px', fontSize: '22px', borderRadius: '12px' }}>
                         J
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
