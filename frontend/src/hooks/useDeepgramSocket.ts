@@ -6,13 +6,14 @@
 
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { useCanvasStore } from '@/stores/canvasStore'
-import type { TranscriptMessage, Segmento } from '@/types'
+import type { TranscriptMessage, Segmento, SuggestionMessage } from '@/types'
 
 const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
 
 export function useDeepgramSocket(audienciaId: string) {
     const [isConnected, setIsConnected] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [suggestions, setSuggestions] = useState<SuggestionMessage[]>([])
     const wsRef = useRef<WebSocket | null>(null)
     const reconnectAttemptsRef = useRef(0)
     const maxReconnectAttempts = 10
@@ -51,7 +52,7 @@ export function useDeepgramSocket(audienciaId: string) {
                             // Confirmed segment — add to store
                             // Usar texto mejorado si está disponible, sino el original
                             const textoFinal = msg.texto_mejorado || msg.text
-                            
+
                             const segment: Segmento = {
                                 id: crypto.randomUUID(),
                                 audiencia_id: audienciaId,
@@ -70,8 +71,8 @@ export function useDeepgramSocket(audienciaId: string) {
                             }
                             addSegment(segment)
                         } else {
-                            // Provisional — update the floating text
-                            updateProvisional(msg.text, msg.speaker)
+                            // Provisional — update the floating text with word-level data
+                            updateProvisional(msg.text, msg.speaker, msg.words || [])
                         }
                         break
                     }
@@ -93,6 +94,12 @@ export function useDeepgramSocket(audienciaId: string) {
                     case 'error':
                         setError(data.message)
                         break
+
+                    case 'suggestion': {
+                        const suggestion = data as SuggestionMessage
+                        setSuggestions(prev => [...prev, suggestion])
+                        break
+                    }
                 }
             } catch (e) {
                 console.error('Error parsing WebSocket message:', e)
@@ -160,6 +167,8 @@ export function useDeepgramSocket(audienciaId: string) {
     return {
         isConnected,
         error,
+        suggestions,
+        setSuggestions,
         connect,
         sendAudio,
         stop,

@@ -125,6 +125,7 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         segments,
         provisionalText,
         provisionalSpeaker,
+        provisionalWords,
         activeSegmentId,
         editedSegmentIds,
         updateSegment,
@@ -430,7 +431,7 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         }
     }, [editor, activeSegmentId])
 
-    /* ── Provisional text (grey italic) ─────────────── */
+    /* ── Provisional text (word-by-word animation) ── */
 
     useEffect(() => {
         if (!editor) return
@@ -442,8 +443,17 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         if (provisionalText && provisionalText.trim()) {
             const { color } = getSpeakerInfo(provisionalSpeaker || 'SPEAKER_00')
 
+            // Build word-by-word HTML if we have individual words
+            let displayText = provisionalText
+            if (provisionalWords && provisionalWords.length > 0) {
+                displayText = provisionalWords.map((w, i) => {
+                    const delay = Math.min(i * 30, 300) // Staggered delay per word, cap at 300ms
+                    return `<span class="provisional-word" style="animation-delay:${delay}ms">${w.word}</span>`
+                }).join(' ')
+            }
+
             editor.chain().focus('end').setProvisional({
-                text: provisionalText,
+                text: displayText,
                 speakerId: provisionalSpeaker || 'SPEAKER_00',
                 color: color
             }).run()
@@ -455,7 +465,7 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
                 })
             }
         }
-    }, [editor, provisionalText, provisionalSpeaker, getSpeakerInfo])
+    }, [editor, provisionalText, provisionalSpeaker, provisionalWords, getSpeakerInfo])
 
     /* ── Smart auto-scroll control ──────────────────── */
 

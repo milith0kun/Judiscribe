@@ -219,6 +219,21 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
         
         await websocket.send_json(result_to_send)
         
+        # Run legal dictionary check on the enhanced text
+        try:
+            from app.services.legal_dictionary import get_legal_dictionary
+            dictionary = get_legal_dictionary()
+            suggestions = dictionary.check_segment(texto_mejorado)
+            
+            for suggestion in suggestions:
+                await websocket.send_json({
+                    "type": "suggestion",
+                    "segment_order": segment_counter,
+                    **suggestion.to_dict(),
+                })
+        except Exception as dict_err:
+            logger.debug(f"Dictionary check skipped: {dict_err}")
+        
         # Guardar en base de datos
         try:
             async with async_session() as db:

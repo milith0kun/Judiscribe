@@ -1,0 +1,1412 @@
+{
+    "version": "1.0",
+    "descripcion": "Diccionario jurídico peruano para corrección automática de transcripciones judiciales",
+    "terminos": [
+        {
+            "correcto": "sobreseimiento",
+            "variantes_error": [
+                "sobresemiento",
+                "sobreseimeinto",
+                "sobrecemiento",
+                "sobresamiento",
+                "sobreseimento"
+            ],
+            "categoria": "procesal",
+            "contexto": "Archivo definitivo de causa penal"
+        },
+        {
+            "correcto": "acusación fiscal",
+            "variantes_error": [
+                "acusacion fiscal",
+                "acusasion fiscal",
+                "acuzación fiscal",
+                "acusacion fiscar"
+            ],
+            "categoria": "procesal",
+            "contexto": "Requerimiento del Ministerio Público"
+        },
+        {
+            "correcto": "prisión preventiva",
+            "variantes_error": [
+                "prision preventiva",
+                "prisión preventiba",
+                "pricion preventiva",
+                "presión preventiva"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Medida de coerción personal"
+        },
+        {
+            "correcto": "comparecencia restringida",
+            "variantes_error": [
+                "comparesencia restringida",
+                "comparecensia restringida",
+                "conparecencia restringida"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Medida cautelar alternativa"
+        },
+        {
+            "correcto": "comparecencia simple",
+            "variantes_error": [
+                "comparesencia simple",
+                "comparecensia simple",
+                "conparecencia simple"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "No presenta restricciones"
+        },
+        {
+            "correcto": "sentencia condenatoria",
+            "variantes_error": [
+                "sentencia condenatorioa",
+                "sentencia condenatoria",
+                "sentencia conderatoria"
+            ],
+            "categoria": "resolucion",
+            "contexto": "Decisión judicial de culpabilidad"
+        },
+        {
+            "correcto": "sentencia absolutoria",
+            "variantes_error": [
+                "sentencia absolotoria",
+                "sentencia absulutoria",
+                "sentencia avsolutoria"
+            ],
+            "categoria": "resolucion",
+            "contexto": "Decisión judicial de inocencia"
+        },
+        {
+            "correcto": "resolución judicial",
+            "variantes_error": [
+                "resolucion judicial",
+                "resolusion judicial",
+                "rezolución judicial",
+                "resolución judisial"
+            ],
+            "categoria": "resolucion",
+            "contexto": "Documento formal del juez"
+        },
+        {
+            "correcto": "auto de enjuiciamiento",
+            "variantes_error": [
+                "auto de enjuisiamiento",
+                "auto de enjuciamiento",
+                "auto de enjuisiamento"
+            ],
+            "categoria": "procesal",
+            "contexto": "Resolución que admite acusación"
+        },
+        {
+            "correcto": "auto de citación a juicio",
+            "variantes_error": [
+                "auto de sitación a juicio",
+                "auto de citasión a juicio",
+                "auto de citacion a juisio"
+            ],
+            "categoria": "procesal",
+            "contexto": "Convocatoria al juicio oral"
+        },
+        {
+            "correcto": "control de acusación",
+            "variantes_error": [
+                "control de acusasión",
+                "control de acusacion",
+                "control de acuzación"
+            ],
+            "categoria": "procesal",
+            "contexto": "Audiencia para examinar requerimiento fiscal"
+        },
+        {
+            "correcto": "requerimiento acusatorio",
+            "variantes_error": [
+                "requerimiento acuzatorio",
+                "requerimiento acusatorioe",
+                "requerimient acusatorio"
+            ],
+            "categoria": "procesal",
+            "contexto": "Solicitud formal del fiscal"
+        },
+        {
+            "correcto": "requerimiento fiscal",
+            "variantes_error": [
+                "requerimiento fiscar",
+                "requerimiento fiscall",
+                "requerimient fiscal"
+            ],
+            "categoria": "procesal",
+            "contexto": "Petición del Ministerio Público"
+        },
+        {
+            "correcto": "determinación de pena",
+            "variantes_error": [
+                "determinasión de pena",
+                "determinacion de pena",
+                "determinación de penna"
+            ],
+            "categoria": "penal",
+            "contexto": "Proceso de fijar la pena"
+        },
+        {
+            "correcto": "tipificación",
+            "variantes_error": [
+                "tipificasión",
+                "tipificacion",
+                "tipificaión",
+                "tipificasion"
+            ],
+            "categoria": "penal",
+            "contexto": "Adecuación de la conducta al tipo penal"
+        },
+        {
+            "correcto": "subsunción",
+            "variantes_error": [
+                "subsuncion",
+                "subsusion",
+                "subsunsión",
+                "subsunión"
+            ],
+            "categoria": "penal",
+            "contexto": "Encuadre de hechos en la norma"
+        },
+        {
+            "correcto": "alegatos de apertura",
+            "variantes_error": [
+                "alegatos de aperturra",
+                "alegatos de avertura",
+                "alegatos de apertur"
+            ],
+            "categoria": "procesal",
+            "contexto": "Exposición inicial en juicio oral"
+        },
+        {
+            "correcto": "alegatos de clausura",
+            "variantes_error": [
+                "alegatos de clauusura",
+                "alegatos de clausurra",
+                "alegatos de clausur"
+            ],
+            "categoria": "procesal",
+            "contexto": "Exposición final en juicio oral"
+        },
+        {
+            "correcto": "oralización de pruebas",
+            "variantes_error": [
+                "oralizasión de pruebas",
+                "oralización de pruevas",
+                "oralizacion de pruebas"
+            ],
+            "categoria": "procesal",
+            "contexto": "Lectura formal de medios probatorios"
+        },
+        {
+            "correcto": "actuación probatoria",
+            "variantes_error": [
+                "actuasión probatoria",
+                "actuacion probatoria",
+                "actuación provatoria"
+            ],
+            "categoria": "procesal",
+            "contexto": "Fase de producción de pruebas"
+        },
+        {
+            "correcto": "prueba de oficio",
+            "variantes_error": [
+                "prueva de oficio",
+                "prueba de ofisio",
+                "prueba de ofcio"
+            ],
+            "categoria": "procesal",
+            "contexto": "Prueba ordenada por el juez"
+        },
+        {
+            "correcto": "prueba anticipada",
+            "variantes_error": [
+                "prueva anticipada",
+                "prueba antisipada",
+                "prueba antisipada"
+            ],
+            "categoria": "procesal",
+            "contexto": "Prueba actuada antes del juicio"
+        },
+        {
+            "correcto": "reparación civil",
+            "variantes_error": [
+                "reparacion civil",
+                "reparasión civil",
+                "reparación sivil",
+                "reparacion sibil"
+            ],
+            "categoria": "penal",
+            "contexto": "Indemnización al agraviado"
+        },
+        {
+            "correcto": "pena privativa de libertad",
+            "variantes_error": [
+                "pena pribativa de libertad",
+                "pena privatiba de libertad",
+                "pena privativa de livertad"
+            ],
+            "categoria": "penal",
+            "contexto": "Reclusión en establecimiento penitenciario"
+        },
+        {
+            "correcto": "suspensión de la pena",
+            "variantes_error": [
+                "suspención de la pena",
+                "suspencion de la pena",
+                "suspensión de la penna"
+            ],
+            "categoria": "penal",
+            "contexto": "Pena sin ejecución efectiva"
+        },
+        {
+            "correcto": "beneficio penitenciario",
+            "variantes_error": [
+                "benefisio penitenciario",
+                "beneficio penitensario",
+                "veneficio penitenciario"
+            ],
+            "categoria": "penitenciario",
+            "contexto": "Reducción de tiempo de reclusión"
+        },
+        {
+            "correcto": "terminación anticipada",
+            "variantes_error": [
+                "terminasión anticipada",
+                "terminacion antisipada",
+                "terminación antisipada"
+            ],
+            "categoria": "procesal",
+            "contexto": "Acuerdo entre fiscal e imputado"
+        },
+        {
+            "correcto": "conclusión anticipada",
+            "variantes_error": [
+                "conclusión antisipada",
+                "conclusion anticipada",
+                "conclusión anticipad"
+            ],
+            "categoria": "procesal",
+            "contexto": "Aceptación de cargos en juicio"
+        },
+        {
+            "correcto": "principio de oportunidad",
+            "variantes_error": [
+                "prinsipio de oportunidad",
+                "principio de oportunidadd",
+                "principio de oportundad"
+            ],
+            "categoria": "procesal",
+            "contexto": "Abstención del ejercicio de la acción penal"
+        },
+        {
+            "correcto": "acuerdo reparatorio",
+            "variantes_error": [
+                "acuerdo reparatorioo",
+                "acuerdo reparativerio",
+                "acuerdo reparatorio"
+            ],
+            "categoria": "procesal",
+            "contexto": "Pacto entre imputado y agraviado"
+        },
+        {
+            "correcto": "imputado",
+            "variantes_error": [
+                "inputado",
+                "imputao",
+                "imputadoo"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Persona investigada o procesada"
+        },
+        {
+            "correcto": "agraviado",
+            "variantes_error": [
+                "agravido",
+                "agrabiado",
+                "agraviado"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Víctima del delito"
+        },
+        {
+            "correcto": "actor civil",
+            "variantes_error": [
+                "actor sivil",
+                "actor sibil",
+                "actor civil"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Parte civil constituida"
+        },
+        {
+            "correcto": "tercero civil responsable",
+            "variantes_error": [
+                "tercero sivil responsable",
+                "tercer civil responsable",
+                "tersero civil responsable"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Responsable civil sin ser imputado"
+        },
+        {
+            "correcto": "abogado defensor",
+            "variantes_error": [
+                "abogado defenzor",
+                "abogado defesnor",
+                "avogado defensor"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Letrado de la defensa"
+        },
+        {
+            "correcto": "defensa técnica",
+            "variantes_error": [
+                "defensa tecnica",
+                "defenza técnica",
+                "defensa teinica"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Abogado del procesado"
+        },
+        {
+            "correcto": "defensa pública",
+            "variantes_error": [
+                "defenza pública",
+                "defensa publica",
+                "defensa públca"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Defensor de oficio"
+        },
+        {
+            "correcto": "procurador público",
+            "variantes_error": [
+                "procurador publico",
+                "prosucurador público",
+                "procurador púlico"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Representante legal del Estado"
+        },
+        {
+            "correcto": "fiscal provincial",
+            "variantes_error": [
+                "fiscal provinciall",
+                "fiscal provinsial",
+                "fiscar provincial"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Fiscal de primera instancia"
+        },
+        {
+            "correcto": "fiscal adjunto",
+            "variantes_error": [
+                "fiscal adjuntoo",
+                "fiscal adunto",
+                "fiscar adjunto"
+            ],
+            "categoria": "sujetos",
+            "contexto": "Auxiliar del fiscal"
+        },
+        {
+            "correcto": "peligro de fuga",
+            "variantes_error": [
+                "peligro de fug",
+                "peligro de fuja",
+                "pelgro de fuga"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Riesgo de evasión procesal"
+        },
+        {
+            "correcto": "peligro de obstaculización",
+            "variantes_error": [
+                "peligro de obstaculizasión",
+                "peligro de obstaclización",
+                "peligro de obstaculisación"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Riesgo de afectación a la investigación"
+        },
+        {
+            "correcto": "arraigo domiciliario",
+            "variantes_error": [
+                "arraigo domiciliarioo",
+                "arraigo domicilario",
+                "arraigo domisiliario"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Vinculación del procesado con un domicilio"
+        },
+        {
+            "correcto": "arraigo familiar",
+            "variantes_error": [
+                "arraigo familiarr",
+                "arraigo familar",
+                "arraigo familiiar"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Vinculación con familia"
+        },
+        {
+            "correcto": "arraigo laboral",
+            "variantes_error": [
+                "arraigo lavoral",
+                "arraigo laborall",
+                "arraigo laborral"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Vinculación con empleo"
+        },
+        {
+            "correcto": "gravedad de la pena",
+            "variantes_error": [
+                "gravedadd de la pena",
+                "gravedad de la penna",
+                "gravdad de la pena"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Severidad de la sanción esperada"
+        },
+        {
+            "correcto": "proporcionalidad",
+            "variantes_error": [
+                "proporcionalida",
+                "proporsionalidad",
+                "proporcionaliad"
+            ],
+            "categoria": "principio",
+            "contexto": "Adecuación de medida al fin"
+        },
+        {
+            "correcto": "plazo razonable",
+            "variantes_error": [
+                "plazo razonavle",
+                "plazo razonablel",
+                "plaso razonable"
+            ],
+            "categoria": "principio",
+            "contexto": "Duración justificada del proceso"
+        },
+        {
+            "correcto": "presunción de inocencia",
+            "variantes_error": [
+                "presuncion de inocencia",
+                "presunción de inosencia",
+                "presunción de inoscencia"
+            ],
+            "categoria": "principio",
+            "contexto": "Garantía fundamental del procesado"
+        },
+        {
+            "correcto": "medida cautelar",
+            "variantes_error": [
+                "medida cautelarr",
+                "medida cautelaer",
+                "medda cautelar"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Disposición provisional de aseguramiento"
+        },
+        {
+            "correcto": "cesación de prisión preventiva",
+            "variantes_error": [
+                "sesación de prisión preventiva",
+                "cesación de prision preventiva",
+                "sesasion de prision"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Fin anticipado de la prisión preventiva"
+        },
+        {
+            "correcto": "prolongación de prisión preventiva",
+            "variantes_error": [
+                "prolongasión de prisión preventiva",
+                "prolongacion de prision preventiva"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Extensión de la medida cautelar"
+        },
+        {
+            "correcto": "Código Procesal Penal",
+            "variantes_error": [
+                "codigo procesal penal",
+                "código procesal penal",
+                "código prozesal penal"
+            ],
+            "categoria": "normativo",
+            "contexto": "Norma procesal principal"
+        },
+        {
+            "correcto": "Código Penal",
+            "variantes_error": [
+                "codigo penal",
+                "códgo penal",
+                "código pennl"
+            ],
+            "categoria": "normativo",
+            "contexto": "Norma penal sustantiva"
+        },
+        {
+            "correcto": "Acuerdo Plenario",
+            "variantes_error": [
+                "acuerdo plenarioo",
+                "acurdo plenario",
+                "aquerdo plenario"
+            ],
+            "categoria": "normativo",
+            "contexto": "Criterio interpretativo vinculante"
+        },
+        {
+            "correcto": "Casación",
+            "variantes_error": [
+                "casacion",
+                "casasión",
+                "casasion",
+                "cazación"
+            ],
+            "categoria": "normativo",
+            "contexto": "Recurso ante la Corte Suprema"
+        },
+        {
+            "correcto": "jurisprudencia vinculante",
+            "variantes_error": [
+                "jurisprudencia binculante",
+                "jurisprudecia vinculante",
+                "jurisprudencia vinculant"
+            ],
+            "categoria": "normativo",
+            "contexto": "Precedentes obligatorios"
+        },
+        {
+            "correcto": "concurso real",
+            "variantes_error": [
+                "concurso rela",
+                "concurso rea",
+                "consurso real"
+            ],
+            "categoria": "penal",
+            "contexto": "Pluralidad de delitos con acciones independientes"
+        },
+        {
+            "correcto": "concurso ideal",
+            "variantes_error": [
+                "concurso idea",
+                "consurso ideal",
+                "concurso ideall"
+            ],
+            "categoria": "penal",
+            "contexto": "Una acción que configura varios delitos"
+        },
+        {
+            "correcto": "tentativa",
+            "variantes_error": [
+                "tentatiba",
+                "tentantiva",
+                "tentativa"
+            ],
+            "categoria": "penal",
+            "contexto": "Ejecución incompleta del delito"
+        },
+        {
+            "correcto": "consumación",
+            "variantes_error": [
+                "consumasión",
+                "consumacion",
+                "consunación"
+            ],
+            "categoria": "penal",
+            "contexto": "Realización completa del tipo penal"
+        },
+        {
+            "correcto": "Ministerio Público",
+            "variantes_error": [
+                "ministerio publico",
+                "ministerio público",
+                "ministerioo público"
+            ],
+            "categoria": "institucional",
+            "contexto": "Órgano titular de la acción penal"
+        },
+        {
+            "correcto": "Poder Judicial",
+            "variantes_error": [
+                "poder judicial",
+                "poder judisial",
+                "poder judiciall"
+            ],
+            "categoria": "institucional",
+            "contexto": "Órgano jurisdiccional del Estado"
+        },
+        {
+            "correcto": "Corte Superior de Justicia",
+            "variantes_error": [
+                "corte superior de justicia",
+                "corte superior de justisia",
+                "corte superiora de justicia"
+            ],
+            "categoria": "institucional",
+            "contexto": "Distrito judicial"
+        },
+        {
+            "correcto": "juzgado penal unipersonal",
+            "variantes_error": [
+                "juzgado penal unipersonall",
+                "jusgado penal unipersonal",
+                "juzgado pennl unipersonal"
+            ],
+            "categoria": "institucional",
+            "contexto": "Órgano jurisdiccional de primera instancia"
+        },
+        {
+            "correcto": "juzgado de investigación preparatoria",
+            "variantes_error": [
+                "juzgado de investigación preparatoría",
+                "jusgado de investigación preparatoria"
+            ],
+            "categoria": "institucional",
+            "contexto": "Juez de garantías"
+        },
+        {
+            "correcto": "sala penal de apelaciones",
+            "variantes_error": [
+                "sala penal de apelasiones",
+                "sala penal de apelacione",
+                "sala pennl de apelaciones"
+            ],
+            "categoria": "institucional",
+            "contexto": "Órgano de segunda instancia"
+        },
+        {
+            "correcto": "expediente judicial",
+            "variantes_error": [
+                "espediente judicial",
+                "expediente judisial",
+                "expediente judiciall"
+            ],
+            "categoria": "procesal",
+            "contexto": "Carpeta con actuaciones procesales"
+        },
+        {
+            "correcto": "notificación",
+            "variantes_error": [
+                "notificasión",
+                "notificacion",
+                "notificación"
+            ],
+            "categoria": "procesal",
+            "contexto": "Comunicación formal a las partes"
+        },
+        {
+            "correcto": "cédula de notificación",
+            "variantes_error": [
+                "sedula de notificacion",
+                "cedula de notificasión",
+                "cédula de notificasion"
+            ],
+            "categoria": "procesal",
+            "contexto": "Documento de comunicación procesal"
+        },
+        {
+            "correcto": "audiencia pública",
+            "variantes_error": [
+                "audiensia pública",
+                "audiencia publica",
+                "audiencia públca"
+            ],
+            "categoria": "procesal",
+            "contexto": "Sesión abierta al público"
+        },
+        {
+            "correcto": "audiencia privada",
+            "variantes_error": [
+                "audiensia privada",
+                "audiencia pribada",
+                "audiencia pribad"
+            ],
+            "categoria": "procesal",
+            "contexto": "Sesión reservada"
+        },
+        {
+            "correcto": "juicio oral",
+            "variantes_error": [
+                "juisio oral",
+                "juicio orall",
+                "juicio orar"
+            ],
+            "categoria": "procesal",
+            "contexto": "Etapa de juzgamiento"
+        },
+        {
+            "correcto": "investigación preparatoria",
+            "variantes_error": [
+                "investigación preparatoría",
+                "investigasión preparatoria",
+                "investigacion preparatoria"
+            ],
+            "categoria": "procesal",
+            "contexto": "Etapa de acopio de evidencia"
+        },
+        {
+            "correcto": "etapa intermedia",
+            "variantes_error": [
+                "etapa intermeda",
+                "etapa intermediaa",
+                "etapa interredia"
+            ],
+            "categoria": "procesal",
+            "contexto": "Control de acusación"
+        },
+        {
+            "correcto": "juzgamiento",
+            "variantes_error": [
+                "jusgamiento",
+                "juzgamient",
+                "juzgamiiento"
+            ],
+            "categoria": "procesal",
+            "contexto": "Fase de juicio oral"
+        },
+        {
+            "correcto": "recurso de apelación",
+            "variantes_error": [
+                "recurso de apelasión",
+                "recurso de apelacion",
+                "recursor de apelación"
+            ],
+            "categoria": "impugnacion",
+            "contexto": "Impugnación ante instancia superior"
+        },
+        {
+            "correcto": "recurso de nulidad",
+            "variantes_error": [
+                "recurso de nulidadd",
+                "recurso de nuludad",
+                "recurrso de nulidad"
+            ],
+            "categoria": "impugnacion",
+            "contexto": "Impugnación ante Corte Suprema"
+        },
+        {
+            "correcto": "recurso de queja",
+            "variantes_error": [
+                "recurso de quejja",
+                "recurso de quega",
+                "recurrso de queja"
+            ],
+            "categoria": "impugnacion",
+            "contexto": "Impugnación del rechazo de apelación"
+        },
+        {
+            "correcto": "habitualidad",
+            "variantes_error": [
+                "havitualidad",
+                "habitualida",
+                "habitualidadd"
+            ],
+            "categoria": "penal",
+            "contexto": "Reiteración delictiva"
+        },
+        {
+            "correcto": "reincidencia",
+            "variantes_error": [
+                "reinsidencia",
+                "reincidencia",
+                "reinsidensia"
+            ],
+            "categoria": "penal",
+            "contexto": "Condena previa por delito similar"
+        },
+        {
+            "correcto": "atenuante",
+            "variantes_error": [
+                "atenuantte",
+                "atenunte",
+                "atenuanté"
+            ],
+            "categoria": "penal",
+            "contexto": "Circunstancia que reduce la pena"
+        },
+        {
+            "correcto": "agravante",
+            "variantes_error": [
+                "agravantte",
+                "agrravante",
+                "agrabante"
+            ],
+            "categoria": "penal",
+            "contexto": "Circunstancia que aumenta la pena"
+        },
+        {
+            "correcto": "dolo",
+            "variantes_error": [
+                "doloo",
+                "dlolo",
+                "dlo"
+            ],
+            "categoria": "penal",
+            "contexto": "Intención de cometer el delito"
+        },
+        {
+            "correcto": "culpa",
+            "variantes_error": [
+                "culppa",
+                "culp",
+                "culap"
+            ],
+            "categoria": "penal",
+            "contexto": "Negligencia sin intención"
+        },
+        {
+            "correcto": "antijuridicidad",
+            "variantes_error": [
+                "antijuridicida",
+                "antijuridicidadd",
+                "antijuridisidad"
+            ],
+            "categoria": "penal",
+            "contexto": "Contrariedad al derecho"
+        },
+        {
+            "correcto": "culpabilidad",
+            "variantes_error": [
+                "culpabilida",
+                "culpabilidadd",
+                "culpabilidád"
+            ],
+            "categoria": "penal",
+            "contexto": "Reproche personal al autor"
+        },
+        {
+            "correcto": "responsabilidad restringida",
+            "variantes_error": [
+                "responsabilidad restringda",
+                "responsabiliad restringida",
+                "responsabilidad restringid"
+            ],
+            "categoria": "penal",
+            "contexto": "Atenuación por edad"
+        },
+        {
+            "correcto": "prescripción",
+            "variantes_error": [
+                "prescripcion",
+                "prescripsión",
+                "prescripcion"
+            ],
+            "categoria": "procesal",
+            "contexto": "Extinción de la acción penal por tiempo"
+        },
+        {
+            "correcto": "impedimento de salida",
+            "variantes_error": [
+                "impedimento de salid",
+                "impediment de salida",
+                "inpedimento de salida"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Restricción de desplazamiento"
+        },
+        {
+            "correcto": "detención preliminar",
+            "variantes_error": [
+                "detención preliminarr",
+                "detencion preliminar",
+                "detención prelimnar"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Captura inicial del sospechoso"
+        },
+        {
+            "correcto": "incautación",
+            "variantes_error": [
+                "incautasión",
+                "incautacion",
+                "incautacion"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Aseguramiento de bienes"
+        },
+        {
+            "correcto": "embargo",
+            "variantes_error": [
+                "enbrago",
+                "embargoo",
+                "enbargo"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Afectación patrimonial"
+        },
+        {
+            "correcto": "decomiso",
+            "variantes_error": [
+                "decomiiso",
+                "descomiso",
+                "decomis"
+            ],
+            "categoria": "penal",
+            "contexto": "Pérdida definitiva de bienes ilícitos"
+        },
+        {
+            "correcto": "peritaje",
+            "variantes_error": [
+                "peritage",
+                "peritajee",
+                "peritje"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Dictamen técnico especializado"
+        },
+        {
+            "correcto": "testimonio",
+            "variantes_error": [
+                "testimoneo",
+                "testimonioo",
+                "testmonio"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Declaración del testigo"
+        },
+        {
+            "correcto": "declaración instructiva",
+            "variantes_error": [
+                "declarasión instructiva",
+                "declaracion instructiva",
+                "declaración instrutiva"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Manifestación del imputado"
+        },
+        {
+            "correcto": "declaración preventiva",
+            "variantes_error": [
+                "declarasión preventiva",
+                "declaracion preventiva",
+                "declaración prebentiva"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Manifestación del agraviado"
+        },
+        {
+            "correcto": "reconocimiento",
+            "variantes_error": [
+                "reconosimiento",
+                "reconocimient",
+                "reconocimiento"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Identificación de personas u objetos"
+        },
+        {
+            "correcto": "inspección judicial",
+            "variantes_error": [
+                "inspección judisial",
+                "inspeccion judicial",
+                "inspección judiciall"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Verificación directa por el juez"
+        },
+        {
+            "correcto": "reconstrucción de hechos",
+            "variantes_error": [
+                "reconstruccion de hechos",
+                "reconstrucsión de hechos",
+                "reconstrucción de echos"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Reproducción de la escena"
+        },
+        {
+            "correcto": "cadena de custodia",
+            "variantes_error": [
+                "cadena de custodiaa",
+                "cadena de custodea",
+                "cadena de custodi"
+            ],
+            "categoria": "probatorio",
+            "contexto": "Trazabilidad de evidencia"
+        },
+        {
+            "correcto": "contradicción",
+            "variantes_error": [
+                "contradiccion",
+                "contradicsión",
+                "contradisción"
+            ],
+            "categoria": "principio",
+            "contexto": "Derecho a contradecir la prueba"
+        },
+        {
+            "correcto": "inmediación",
+            "variantes_error": [
+                "inmediasión",
+                "inmediacion",
+                "inmediasion"
+            ],
+            "categoria": "principio",
+            "contexto": "Presencia directa del juez"
+        },
+        {
+            "correcto": "oralidad",
+            "variantes_error": [
+                "oralida",
+                "oralidadd",
+                "oralídad"
+            ],
+            "categoria": "principio",
+            "contexto": "Prevalencia de la expresión oral"
+        },
+        {
+            "correcto": "publicidad",
+            "variantes_error": [
+                "publicida",
+                "publisidad",
+                "publicidadd"
+            ],
+            "categoria": "principio",
+            "contexto": "Acceso del público a audiencias"
+        },
+        {
+            "correcto": "debido proceso",
+            "variantes_error": [
+                "deviido proceso",
+                "devido proceso",
+                "devid proseso"
+            ],
+            "categoria": "principio",
+            "contexto": "Garantía procesal fundamental"
+        },
+        {
+            "correcto": "tutela jurisdiccional",
+            "variantes_error": [
+                "tutela jurisdissional",
+                "tutela jurisdicconal",
+                "tutela jurisdicional"
+            ],
+            "categoria": "principio",
+            "contexto": "Acceso efectivo a la justicia"
+        },
+        {
+            "correcto": "nulidad procesal",
+            "variantes_error": [
+                "nulidadd procesal",
+                "nulidad prosesal",
+                "nulidad procesall"
+            ],
+            "categoria": "procesal",
+            "contexto": "Invalidación de acto procesal"
+        },
+        {
+            "correcto": "excepción de improcedencia",
+            "variantes_error": [
+                "excepcion de improcedencia",
+                "exepción de improcedencia",
+                "excepsión de improsedencia"
+            ],
+            "categoria": "procesal",
+            "contexto": "Defensa previa del imputado"
+        },
+        {
+            "correcto": "cuestión previa",
+            "variantes_error": [
+                "cuestion previa",
+                "cuestión prebiia",
+                "cuestión preevia"
+            ],
+            "categoria": "procesal",
+            "contexto": "Requisito de procedibilidad"
+        },
+        {
+            "correcto": "cuestión prejudicial",
+            "variantes_error": [
+                "cuestion prejudicial",
+                "cuestión prejudisial",
+                "cuestión prejuduicial"
+            ],
+            "categoria": "procesal",
+            "contexto": "Elemento extrapenal pendiente"
+        },
+        {
+            "correcto": "convalidación",
+            "variantes_error": [
+                "convalidasión",
+                "convalidacion",
+                "convaldación"
+            ],
+            "categoria": "procesal",
+            "contexto": "Subsanación de acto nulo"
+        },
+        {
+            "correcto": "desistimiento",
+            "variantes_error": [
+                "desistimient",
+                "desistimientoo",
+                "dezistimiento"
+            ],
+            "categoria": "procesal",
+            "contexto": "Renuncia al recurso"
+        },
+        {
+            "correcto": "impugnación",
+            "variantes_error": [
+                "impugnasión",
+                "impugnacion",
+                "inpugnación"
+            ],
+            "categoria": "impugnacion",
+            "contexto": "Cuestionamiento de resolución"
+        },
+        {
+            "correcto": "legitimidad para obrar",
+            "variantes_error": [
+                "legitimidad para ovrar",
+                "legitimidadd para obrar",
+                "legitinidad para obrar"
+            ],
+            "categoria": "procesal",
+            "contexto": "Titularidad del derecho en controversia"
+        },
+        {
+            "correcto": "Decreto Legislativo",
+            "variantes_error": [
+                "decreto legislativo",
+                "decreto lejislativo",
+                "decreto legilativo"
+            ],
+            "categoria": "normativo",
+            "contexto": "Norma con rango de ley"
+        },
+        {
+            "correcto": "Ley Orgánica",
+            "variantes_error": [
+                "ley organica",
+                "ley orgánica",
+                "ley orgánia"
+            ],
+            "categoria": "normativo",
+            "contexto": "Norma de organización institucional"
+        },
+        {
+            "correcto": "INPE",
+            "variantes_error": [
+                "inpe",
+                "impe",
+                "inpee"
+            ],
+            "categoria": "institucional",
+            "contexto": "Instituto Nacional Penitenciario"
+        },
+        {
+            "correcto": "RENIEC",
+            "variantes_error": [
+                "reniec",
+                "reniiec",
+                "reniec"
+            ],
+            "categoria": "institucional",
+            "contexto": "Registro Nacional de Identidad"
+        },
+        {
+            "correcto": "Policía Nacional del Perú",
+            "variantes_error": [
+                "policia nacional del peru",
+                "policía nasional del perú",
+                "polisía nacional del perú"
+            ],
+            "categoria": "institucional",
+            "contexto": "Fuerza policial del Estado"
+        },
+        {
+            "correcto": "Defensoría del Pueblo",
+            "variantes_error": [
+                "defenzoria del pueblo",
+                "defensoría del puevlo",
+                "defensoria del pueblo"
+            ],
+            "categoria": "institucional",
+            "contexto": "Órgano de derechos humanos"
+        },
+        {
+            "correcto": "colaboración eficaz",
+            "variantes_error": [
+                "colaborasión eficaz",
+                "colaboracion eficaz",
+                "cola boración eficaz"
+            ],
+            "categoria": "procesal",
+            "contexto": "Cooperación del imputado a cambio de beneficios"
+        },
+        {
+            "correcto": "delación premiada",
+            "variantes_error": [
+                "delasión premiada",
+                "delacion premiada",
+                "delación premiad"
+            ],
+            "categoria": "procesal",
+            "contexto": "Denuncia con beneficio"
+        },
+        {
+            "correcto": "flagrancia",
+            "variantes_error": [
+                "flagransia",
+                "flagrecia",
+                "fragrancia"
+            ],
+            "categoria": "penal",
+            "contexto": "Descubrimiento en el acto"
+        },
+        {
+            "correcto": "allanamiento",
+            "variantes_error": [
+                "allanamiento",
+                "allanamiento",
+                "allanamiennto"
+            ],
+            "categoria": "medida_cautelar",
+            "contexto": "Ingreso a domicilio por orden judicial"
+        },
+        {
+            "correcto": "videoconferencia",
+            "variantes_error": [
+                "videoconferensia",
+                "videoconferecia",
+                "vidioconferencia"
+            ],
+            "categoria": "procesal",
+            "contexto": "Audiencia virtual"
+        },
+        {
+            "correcto": "acta de audiencia",
+            "variantes_error": [
+                "acta de audiensia",
+                "acta de audiecia",
+                "acta de audencia"
+            ],
+            "categoria": "procesal",
+            "contexto": "Registro escrito de la sesión"
+        },
+        {
+            "correcto": "bien jurídico protegido",
+            "variantes_error": [
+                "bien juridico protegido",
+                "bien jurídico protejido",
+                "vien jurídico protegido"
+            ],
+            "categoria": "penal",
+            "contexto": "Interés tutelado por la norma penal"
+        },
+        {
+            "correcto": "nexo causal",
+            "variantes_error": [
+                "nexo cauzal",
+                "nexo causall",
+                "nexo caausal"
+            ],
+            "categoria": "penal",
+            "contexto": "Relación causa-efecto en el delito"
+        },
+        {
+            "correcto": "imputación objetiva",
+            "variantes_error": [
+                "imputacion objetiva",
+                "imputación ovjetiva",
+                "inputación objetiva"
+            ],
+            "categoria": "penal",
+            "contexto": "Atribución del resultado al autor"
+        },
+        {
+            "correcto": "imputación necesaria",
+            "variantes_error": [
+                "imputacion necesaria",
+                "imputación nesesaria",
+                "inputación necesaria"
+            ],
+            "categoria": "penal",
+            "contexto": "Nivel mínimo de detalle en la acusación"
+        },
+        {
+            "correcto": "constitución en actor civil",
+            "variantes_error": [
+                "constitucion en actor civil",
+                "constitusión en actor civil",
+                "constitución en actor sibil"
+            ],
+            "categoria": "procesal",
+            "contexto": "Incorporación del agraviado como parte civil"
+        },
+        {
+            "correcto": "reserva del fallo condenatorio",
+            "variantes_error": [
+                "reserva del fayo condenatorio",
+                "reserva del fallo condernatorio",
+                "reserva del fallo condenatorrio"
+            ],
+            "categoria": "penal",
+            "contexto": "Condena sin inscripción en antecedentes"
+        },
+        {
+            "correcto": "exención de pena",
+            "variantes_error": [
+                "exención de penna",
+                "esencion de pena",
+                "exensión de pena"
+            ],
+            "categoria": "penal",
+            "contexto": "Liberación de la sanción"
+        },
+        {
+            "correcto": "conversión de pena",
+            "variantes_error": [
+                "converción de pena",
+                "conversión de penna",
+                "comversión de pena"
+            ],
+            "categoria": "penal",
+            "contexto": "Cambio de tipo de pena"
+        },
+        {
+            "correcto": "inhabilitación",
+            "variantes_error": [
+                "inhabilitasión",
+                "inhabilitacion",
+                "inhabilatación"
+            ],
+            "categoria": "penal",
+            "contexto": "Restricción de derechos específicos"
+        },
+        {
+            "correcto": "días multa",
+            "variantes_error": [
+                "dias multa",
+                "días multta",
+                "días multaa"
+            ],
+            "categoria": "penal",
+            "contexto": "Pena pecuniaria por días"
+        },
+        {
+            "correcto": "prestación de servicios comunitarios",
+            "variantes_error": [
+                "prestasión de servicios comunitarios",
+                "prestación de servisios comunitarios"
+            ],
+            "categoria": "penal",
+            "contexto": "Pena de trabajo social"
+        },
+        {
+            "correcto": "limitación de días libres",
+            "variantes_error": [
+                "limitasión de días libres",
+                "limitación de deas libres",
+                "limitación de días livres"
+            ],
+            "categoria": "penal",
+            "contexto": "Restricción de fines de semana"
+        }
+    ]
+}

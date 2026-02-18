@@ -7,7 +7,7 @@
  * - Bookmarks
  */
 import { create } from 'zustand'
-import type { Segmento, TranscriptMessage } from '@/types'
+import type { Segmento, TranscriptMessage, WordTimestamp } from '@/types'
 
 interface Bookmark {
     id: string
@@ -21,6 +21,7 @@ interface CanvasState {
     segments: Segmento[]
     provisionalText: string | null
     provisionalSpeaker: string | null
+    provisionalWords: WordTimestamp[]
     isTranscribing: boolean
     wordCount: number
     elapsedSeconds: number
@@ -41,7 +42,7 @@ interface CanvasState {
     // Actions
     addSegment: (segment: Segmento) => void
     updateSegment: (segmentId: string, newText: string) => void
-    updateProvisional: (text: string, speaker: string) => void
+    updateProvisional: (text: string, speaker: string, words?: WordTimestamp[]) => void
     clearProvisional: () => void
     setTranscribing: (value: boolean) => void
     setConnectionStatus: (status: 'disconnected' | 'connected' | 'reconnecting') => void
@@ -64,6 +65,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     segments: [],
     provisionalText: null,
     provisionalSpeaker: null,
+    provisionalWords: [],
     isTranscribing: false,
     wordCount: 0,
     elapsedSeconds: 0,
@@ -87,16 +89,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             // (mismo speaker, timestamp de inicio muy cercano o contenido que se extiende)
             const extensionIndex = state.segments.findIndex(s => {
                 const sameSpeaker = s.speaker_id === segment.speaker_id
-                
+
                 // Caso 1: Mismo timestamp de inicio (update)
                 const startTimeClose = Math.abs((s.timestamp_inicio || 0) - (segment.timestamp_inicio || 0)) < 0.5
-                
+
                 // Caso 2: El nuevo segmento contiene el texto del anterior (consolidación)
                 const isConsolidation = sameSpeaker && segment.texto_ia.includes(s.texto_ia)
-                
+
                 // Caso 3: El anterior es subconjunto del nuevo
                 const isExtension = sameSpeaker && (startTimeClose || isConsolidation)
-                
+
                 return isExtension
             })
 
@@ -105,11 +107,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             if (extensionIndex !== -1) {
                 // Es una extensión/actualización/consolidación - reemplazar el segmento anterior
                 const prevSegment = state.segments[extensionIndex]
-                console.log('Consolidating segments:', 
-                    prevSegment.texto_ia.substring(0, 40), 
-                    '→', 
+                console.log('Consolidating segments:',
+                    prevSegment.texto_ia.substring(0, 40),
+                    '→',
                     segment.texto_ia.substring(0, 60))
-                
+
                 newSegments = [...state.segments]
                 newSegments[extensionIndex] = {
                     ...newSegments[extensionIndex],
@@ -179,11 +181,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             }
         }),
 
-    updateProvisional: (text, speaker) =>
-        set({ provisionalText: text, provisionalSpeaker: speaker }),
+    updateProvisional: (text, speaker, words) =>
+        set({ provisionalText: text, provisionalSpeaker: speaker, provisionalWords: words || [] }),
 
     clearProvisional: () =>
-        set({ provisionalText: null, provisionalSpeaker: null }),
+        set({ provisionalText: null, provisionalSpeaker: null, provisionalWords: [] }),
 
     setTranscribing: (value) => set({ isTranscribing: value }),
 
@@ -238,6 +240,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             segments: [],
             provisionalText: null,
             provisionalSpeaker: null,
+            provisionalWords: [],
             isTranscribing: false,
             wordCount: 0,
             elapsedSeconds: 0,

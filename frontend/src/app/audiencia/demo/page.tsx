@@ -17,6 +17,8 @@ import PanelHablantes from '@/components/speakers/PanelHablantes'
 import BarraEstado from '@/components/status/BarraEstado'
 import AtajosFrases from '@/components/shortcuts/AtajosFrases'
 import PanelMarcadores from '@/components/markers/PanelMarcadores'
+import DictionaryPanel from '@/components/dictionary/DictionaryPanel'
+import type { DictionarySuggestion } from '@/components/canvas/SuggestionPopover'
 
 const DEMO_ID = '00000000-0000-0000-0000-000000000000'
 
@@ -50,7 +52,7 @@ export default function DemoCanvasPage() {
         reset,
     } = useCanvasStore()
 
-    const { isConnected, connect, sendAudio, stop, disconnect, error: wsError } = useDeepgramSocket(DEMO_ID)
+    const { isConnected, connect, sendAudio, stop, disconnect, error: wsError, suggestions: wsSuggestions } = useDeepgramSocket(DEMO_ID)
 
     const { isCapturing, startCapture, stopCapture, error: audioError } = useAudioCapture({
         onAudioChunk: sendAudio,
@@ -122,6 +124,36 @@ export default function DemoCanvasPage() {
     // Phrase shortcut → insert into Canvas
     const handleInsertarFrase = useCallback((texto: string) => {
         canvasRef.current?.insertContent(texto)
+    }, [])
+
+    // Dictionary suggestions mapped for the panel
+    const [dictSuggestions, setDictSuggestions] = useState<DictionarySuggestion[]>([])
+
+    // Transform incoming WS suggestions to DictionarySuggestion format
+    useEffect(() => {
+        if (wsSuggestions.length > dictSuggestions.length) {
+            const newOnes = wsSuggestions.slice(dictSuggestions.length).map((s, i) => ({
+                id: `sug-${Date.now()}-${i}`,
+                segmentOrder: s.segment_order,
+                originalWord: s.original_word,
+                suggestedWord: s.suggested_word,
+                confidence: s.confidence,
+                category: s.category,
+                context: '',
+                position: s.position,
+                status: 'pending' as const,
+            }))
+            setDictSuggestions(prev => [...prev, ...newOnes])
+        }
+    }, [wsSuggestions])
+
+    const handleAcceptSuggestion = useCallback((s: DictionarySuggestion) => {
+        setDictSuggestions(prev => prev.map(sug => sug.id === s.id ? { ...sug, status: 'accepted' as const } : sug))
+        // In a real implementation, apply the replacement to the Canvas
+    }, [])
+
+    const handleRejectSuggestion = useCallback((s: DictionarySuggestion) => {
+        setDictSuggestions(prev => prev.map(sug => sug.id === s.id ? { ...sug, status: 'rejected' as const } : sug))
     }, [])
 
     return (
@@ -309,6 +341,15 @@ export default function DemoCanvasPage() {
                     <PanelMarcadores
                         audienciaId={DEMO_ID}
                         onSeekAudio={handleSeekAudio}
+                    />
+
+                    <div className="h-px bg-white/10 mx-4" />
+
+                    {/* Legal Dictionary */}
+                    <DictionaryPanel
+                        suggestions={dictSuggestions}
+                        onAcceptSuggestion={handleAcceptSuggestion}
+                        onRejectSuggestion={handleRejectSuggestion}
                     />
                 </aside>
             </div>

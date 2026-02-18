@@ -149,8 +149,17 @@ class DeepgramStreamingService:
         if words:
             speaker = f"SPEAKER_{words[0].get('speaker', 0):02d}"
 
-        # If not final, just send as provisional for real-time UI
+        # If not final, send as provisional with word-level data for real-time word-by-word rendering
         if not is_final:
+            interim_words = [
+                {
+                    "word": w.get("word", ""),
+                    "start": w.get("start", 0.0),
+                    "end": w.get("end", 0.0),
+                    "confidence": w.get("confidence", 1.0),
+                }
+                for w in words
+            ]
             await self.on_transcript({
                 "type": "transcript",
                 "is_final": False,
@@ -159,7 +168,7 @@ class DeepgramStreamingService:
                 "confidence": best.get("confidence", 1.0),
                 "start": words[0]["start"] if words else 0.0,
                 "end": words[-1]["end"] if words else 0.0,
-                "words": []
+                "words": interim_words,
             })
             return
 
