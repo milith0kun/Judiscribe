@@ -268,7 +268,9 @@ export default function DemoCanvasPage() {
                     {/* Speakers panel */}
                     <PanelHablantes
                         audienciaId={DEMO_ID}
-                        hablantes={hablantes.map((h, i) => ({
+                        speakersDetectados={[]}
+                        modoDemo={true}
+                        hablantesIniciales={hablantes.map((h, i) => ({
                             id: `demo-${i}`,
                             speaker_id: h.speaker_id,
                             rol: 'participante',
