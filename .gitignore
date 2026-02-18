@@ -21,6 +21,8 @@ frontend/package-lock.json
 .env
 .env.local
 .env.*.local
+.env produccion
+*.env produccion
 
 # IDE
 .vscode/
