@@ -287,7 +287,17 @@ export default function DemoCanvasPage() {
                     <div style={{ height: 1, background: 'var(--border-subtle)' }} />
 
                     {/* Phrase shortcuts */}
-                    <AtajosFrases onInsertarFrase={handleInsertarFrase} />
+                    <AtajosFrases
+                        onInsertarFrase={handleInsertarFrase}
+                        modoDemo={true}
+                        frasesIniciales={[
+                            { id: '1', numero_atajo: 1, codigo: 'INST', texto: 'Se da por instalada la audiencia.', categoria: 'Apertura' },
+                            { id: '2', numero_atajo: 2, codigo: 'TRAS', texto: 'Se corre traslado a las partes.', categoria: 'Debate' },
+                            { id: '3', numero_atajo: 3, codigo: 'MINP', texto: 'Se concede el uso de la palabra al Ministerio Público.', categoria: 'Intervención' },
+                            { id: '4', numero_atajo: 4, codigo: 'DEF', texto: 'Se concede el uso de la palabra a la Defensa Técnica.', categoria: 'Intervención' },
+                            { id: '5', numero_atajo: 5, codigo: 'CONC', texto: 'Se da por concluida la presente audiencia siendo las {HORA}.', categoria: 'Cierre' },
+                        ]}
+                    />
 
                     {/* Divider */}
                     <div style={{ height: 1, background: 'var(--border-subtle)' }} />

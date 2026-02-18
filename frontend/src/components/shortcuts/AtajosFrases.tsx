@@ -21,20 +21,30 @@ interface AtajosFrasesProps {
     /** Callback para insertar texto en el Canvas */
     onInsertarFrase: (texto: string) => void
     /** Si true, los atajos están habilitados */
-    habilitado: boolean
+    habilitado?: boolean
+    /** Modo demo: sin API */
+    modoDemo?: boolean
+    /** Frases iniciales para demo */
+    frasesIniciales?: Frase[]
 }
 
 export default function AtajosFrases({
     onInsertarFrase,
-    habilitado,
+    habilitado = true,
+    modoDemo = false,
+    frasesIniciales = [],
 }: AtajosFrasesProps) {
-    const [frases, setFrases] = useState<Frase[]>([])
+    const [frases, setFrases] = useState<Frase[]>(frasesIniciales)
     const [mostrarPanel, setMostrarPanel] = useState(false)
     const [ultimaInsertada, setUltimaInsertada] = useState<string | null>(null)
 
     useEffect(() => {
-        cargarFrases()
-    }, [])
+        if (!modoDemo) {
+            cargarFrases()
+        } else if (frasesIniciales.length > 0) {
+            setFrases(frasesIniciales)
+        }
+    }, [modoDemo, frasesIniciales])
 
     // Registrar atajos de teclado Ctrl+[0-9]
     useEffect(() => {
@@ -42,11 +52,14 @@ export default function AtajosFrases({
 
         const manejarTecla = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key >= '0' && e.key <= '9') {
+                // ... lógica existente ...
                 e.preventDefault()
                 const numero = parseInt(e.key, 10)
                 const frase = frases.find((f) => f.numero_atajo === numero)
                 if (frase) {
-                    insertarFrase(frase)
+                    insertarFrase(frase) // Declared below, safer to move logic or assume hoisting works (it does with var/function, but here it depends on closure scope)
+                    // Better to just call the insertion logic directly or ensure safe reference
+                    handleInsertion(frase)
                 }
             }
         }
@@ -63,6 +76,31 @@ export default function AtajosFrases({
             console.error('Error cargando frases:', err)
         }
     }
+
+    const handleInsertion = (frase: Frase) => {
+        // Reemplazar placeholders dinámicos
+        const ahora = new Date()
+        const textoFinal = frase.texto
+            .replace('{FECHA}', ahora.toLocaleDateString('es-PE', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+            }).toUpperCase())
+            .replace('{HORA}', ahora.toLocaleTimeString('es-PE', {
+                hour: '2-digit',
+                minute: '2-digit',
+            }))
+
+        onInsertarFrase(textoFinal)
+        setUltimaInsertada(frase.codigo)
+
+        // Feedback visual temporal
+        setTimeout(() => setUltimaInsertada(null), 2000)
+    }
+
+    // Alias for existing insertion logic if needed, but handleInsertion covers it.
+    // We'll replace the old useCallback to keep it clean.
+    const insertarFrase = useCallback(handleInsertion, [onInsertarFrase])
 
     const insertarFrase = useCallback(
         (frase: Frase) => {
@@ -123,8 +161,8 @@ export default function AtajosFrases({
                                         ? 'rgba(34, 197, 94, 0.1)'
                                         : 'var(--bg-surface)',
                                 border: `1px solid ${ultimaInsertada === frase.codigo
-                                        ? 'rgba(34, 197, 94, 0.3)'
-                                        : 'transparent'
+                                    ? 'rgba(34, 197, 94, 0.3)'
+                                    : 'transparent'
                                     }`,
                             }}
                         >
