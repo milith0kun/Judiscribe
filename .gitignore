@@ -11,6 +11,11 @@ build/
 node_modules/
 .next/
 out/
+*.tsbuildinfo
+
+# Lock files (solo uno por gestor de paquetes)
+# package-lock.json solo para backend
+frontend/package-lock.json
 
 # Environment
 .env
