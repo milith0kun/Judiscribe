@@ -12,6 +12,7 @@ import logging
 from typing import Optional, List, Dict
 import anthropic
 from app.config import settings
+from app.services.text_processing import detect_question
 
 logger = logging.getLogger(__name__)
 
@@ -155,8 +156,8 @@ Responde SOLO con un JSON válido (sin markdown):
             # Extraer respuesta
             enhanced_text = message.content[0].text.strip()
 
-            # Analizar tipo de segmento con detección mejorada de preguntas
-            is_question = self._detect_question(enhanced_text)
+            # Analizar tipo de segmento con detección centralizada
+            is_question = detect_question(enhanced_text)
             is_statement = enhanced_text.endswith(".")
 
             # Actualizar contexto de conversación
@@ -186,39 +187,6 @@ Responde SOLO con un JSON válido (sin markdown):
                 "is_statement": True,
                 "confidence": 0.5,
             }
-
-    # Palabras interrogativas en español
-    QUESTION_WORDS = {
-        "qué", "que", "cómo", "como", "cuándo", "cuando", "dónde", "donde",
-        "por qué", "quién", "quien", "cuál", "cual", "cuánto", "cuanto",
-        "para qué", "acaso", "puede", "podría", "sabe", "conoce", "recuerda",
-        "entiende", "confirma", "niega", "reconoce", "acepta",
-    }
-
-    def _detect_question(self, text: str) -> bool:
-        """Detecta si el texto es una pregunta usando múltiples indicadores."""
-        if not text or not text.strip():
-            return False
-
-        # 1. Tiene signos de interrogación
-        if "?" in text:
-            return True
-
-        # 2. Empieza con palabra interrogativa
-        clean_text = text.strip().lower()
-        first_word = clean_text.split()[0] if clean_text.split() else ""
-        if first_word in self.QUESTION_WORDS:
-            return True
-
-        # 3. Patrones de preguntas indirectas
-        question_patterns = [
-            "es cierto que", "verdad que", "acaso", "¿",
-            "puede indicar", "podría decir", "sabe usted",
-        ]
-        if any(clean_text.startswith(p) for p in question_patterns):
-            return True
-
-        return False
 
     def _build_context(self, previous_segments: List[Dict[str, str]]) -> str:
         """Construye texto de contexto de segmentos anteriores."""

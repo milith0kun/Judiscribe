@@ -1,3 +1,11 @@
+"""
+Módulo de procesamiento de texto para transcripción judicial.
+
+Centraliza:
+- Detección de preguntas (detect_question)
+- Limpieza de transcripciones (clean_transcript)
+- Capitalización de títulos legales
+"""
 import re
 
 # Palabras que deben capitalizarse siempre (cargos, instituciones)
@@ -27,11 +35,58 @@ CAPITALIZE_WORDS = {
     "agraviada": "Agraviada",
 }
 
-# Palabras interrogativas
-QUESTION_STARTERS = [
-    "qué", "cómo", "cuándo", "dónde", "por qué", "quién", "cuál", "cuánto",
-    "para qué", "acaso", "verdad", "cierto"
+# Palabras interrogativas (conjunto completo para detección de preguntas)
+QUESTION_WORDS = {
+    # Interrogativas básicas
+    "qué", "que", "cómo", "como", "cuándo", "cuando", "dónde", "donde",
+    "por qué", "quién", "quien", "cuál", "cual", "cuánto", "cuanto",
+    "para qué",
+    # Verbos que inician preguntas judiciales
+    "acaso", "puede", "podría", "sabe", "conoce", "recuerda",
+    "entiende", "confirma", "niega", "reconoce", "acepta",
+}
+
+# Patrones de preguntas indirectas
+QUESTION_PATTERNS = [
+    "es cierto que", "verdad que", "acaso", "¿",
+    "puede indicar", "podría decir", "sabe usted",
+    "recuerda usted", "conoce usted",
 ]
+
+
+def detect_question(text: str) -> bool:
+    """
+    Detecta si el texto es una pregunta usando múltiples indicadores.
+
+    Indicadores:
+    1. Signos de interrogación (? o ¿)
+    2. Empieza con palabra interrogativa
+    3. Patrones de preguntas indirectas judiciales
+
+    Args:
+        text: Texto a analizar
+
+    Returns:
+        True si es una pregunta, False en caso contrario
+    """
+    if not text or not text.strip():
+        return False
+
+    # 1. Tiene signos de interrogación
+    if "?" in text or "¿" in text:
+        return True
+
+    # 2. Empieza con palabra interrogativa
+    clean_text = text.strip().lower()
+    first_word = clean_text.split()[0] if clean_text.split() else ""
+    if first_word in QUESTION_WORDS:
+        return True
+
+    # 3. Patrones de preguntas indirectas
+    if any(clean_text.startswith(p) for p in QUESTION_PATTERNS):
+        return True
+
+    return False
 
 
 def clean_transcript(text: str) -> str:
@@ -69,7 +124,7 @@ def clean_transcript(text: str) -> str:
     if text.endswith("?") and not text.startswith("¿"):
         # Check if it starts with a question word
         first_word = text.split()[0].lower() if text.split() else ""
-        if any(first_word.startswith(q) for q in QUESTION_STARTERS):
+        if first_word in QUESTION_WORDS:
             text = "¿" + text
 
     # 6. Add opening exclamation mark if needed

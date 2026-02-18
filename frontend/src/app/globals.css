@@ -962,3 +962,129 @@ body {
   border-radius: 50%;
   background: currentColor;
 }
+
+/* ── Ghost Text / Inline Suggestion (Estilo Copilot) ─────────────────────────────── */
+
+.inline-suggestion {
+  color: var(--text-muted);
+  opacity: 0.6;
+  font-style: italic;
+  pointer-events: none;
+  user-select: none;
+  position: relative;
+}
+
+/* Animación sutil de aparición */
+.inline-suggestion {
+  animation: ghostTextFadeIn 0.2s ease-out;
+}
+
+@keyframes ghostTextFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 0.6;
+    transform: translateX(0);
+  }
+}
+
+/* Indicador de Tab para aceptar */
+.inline-suggestion::after {
+  content: '↹';
+  font-size: 10px;
+  font-style: normal;
+  margin-left: 4px;
+  padding: 1px 4px;
+  background: rgba(166, 130, 70, 0.1);
+  border-radius: 2px;
+  color: var(--accent-gold);
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+/* ── Nombres Propios Detectados ─────────────────────────────── */
+
+.name-highlight {
+  border-bottom: 1px dashed var(--accent-gold);
+  cursor: help;
+}
+
+.name-highlight:hover {
+  background: var(--accent-soft);
+}
+
+/* ── Código de Expediente ─────────────────────────────── */
+
+.expediente-code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(166, 130, 70, 0.08);
+  padding: 2px 6px;
+  border-radius: 2px;
+  color: var(--accent-gold);
+  white-space: nowrap;
+}
+
+/* ── Párrafo con Nueva Intervención ─────────────────────────────── */
+
+.paragraph-new-speaker {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ── Indicador de Carga de Sugerencia ─────────────────────────────── */
+
+.suggestion-loading {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.suggestion-loading::after {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--accent-gold);
+  border-color: var(--accent-gold) transparent var(--accent-gold) transparent;
+  border-radius: 50%;
+  animation: suggestionSpin 0.8s linear infinite;
+}
+
+@keyframes suggestionSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ── Tooltip para Ghost Text ─────────────────────────────── */
+
+.ghost-text-tooltip {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: fadeIn 0.2s ease-out;
+  z-index: 100;
+}
+
+.ghost-text-tooltip kbd {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}

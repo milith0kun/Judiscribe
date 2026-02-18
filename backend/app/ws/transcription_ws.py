@@ -22,6 +22,7 @@ from app.models.audiencia import Audiencia
 from app.models.segmento import Segmento
 from app.services.deepgram_streaming import DeepgramStreamingService
 from app.services.real_time_enhancement import get_enhancement_service
+from app.services.text_processing import detect_question
 
 logger = logging.getLogger(__name__)
 
@@ -93,13 +94,6 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
         "protesto", "objeción", "reservo", "me reservo",
     }
 
-    # Palabras interrogativas para detectar preguntas
-    QUESTION_STARTERS = {
-        "qué", "que", "cómo", "como", "cuándo", "cuando", "dónde", "donde",
-        "por qué", "quién", "quien", "cuál", "cual", "cuánto", "cuanto",
-        "para qué", "acaso", "puede", "podría", "sabe", "conoce", "recuerda",
-    }
-
     def _is_incomplete_by_pattern(text: str) -> bool:
         """Determina si el texto parece incompleto por patrones simples."""
         if not text or not text.strip():
@@ -132,24 +126,6 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
             # Pero si tiene más de 15 palabras sin puntuación, probablemente está completo
             if len(words) > 15:
                 return False
-            return True
-
-        return False
-
-    def _looks_like_question(text: str) -> bool:
-        """Detecta si el texto parece ser una pregunta basándose en palabras interrogativas."""
-        if not text or not text.strip():
-            return False
-
-        clean_text = text.strip().lower()
-        first_word = clean_text.split()[0] if clean_text.split() else ""
-
-        # Verifica si empieza con palabra interrogativa
-        if first_word in QUESTION_STARTERS:
-            return True
-
-        # Verifica si tiene estructura de pregunta indirecta
-        if any(clean_text.startswith(q) for q in ["es cierto que", "verdad que", "acaso"]):
             return True
 
         return False
