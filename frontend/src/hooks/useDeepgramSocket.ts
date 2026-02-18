@@ -49,12 +49,16 @@ export function useDeepgramSocket(audienciaId: string) {
                         const msg = data as TranscriptMessage
                         if (msg.is_final) {
                             // Confirmed segment — add to store
+                            // Usar texto mejorado si está disponible, sino el original
+                            const textoFinal = msg.texto_mejorado || msg.text
+                            
                             const segment: Segmento = {
                                 id: crypto.randomUUID(),
                                 audiencia_id: audienciaId,
                                 speaker_id: msg.speaker,
                                 texto_ia: msg.text,
                                 texto_editado: null,
+                                texto_mejorado: msg.texto_mejorado,
                                 timestamp_inicio: msg.start,
                                 timestamp_fin: msg.end,
                                 confianza: msg.confidence,

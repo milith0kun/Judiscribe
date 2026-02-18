@@ -35,6 +35,7 @@ class Segmento(Base):
     speaker_id: Mapped[str] = mapped_column(String(20), nullable=False)
     texto_ia: Mapped[str] = mapped_column(Text, nullable=False)
     texto_editado: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    texto_mejorado: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Texto mejorado por Claude en tiempo real
     timestamp_inicio: Mapped[float] = mapped_column(Float, nullable=False)
     timestamp_fin: Mapped[float] = mapped_column(Float, nullable=False)
     confianza: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)

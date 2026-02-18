@@ -45,7 +45,7 @@ export default function BarraEstado() {
 
     return (
         <div
-            className="px-6 py-2 flex items-center gap-6 shrink-0 text-xs select-none"
+            className="px-4 sm:px-6 py-2 flex items-center gap-3 sm:gap-6 shrink-0 text-[10px] sm:text-xs select-none overflow-hidden"
             style={{
                 borderTop: '1px solid var(--border-subtle)',
                 background: 'var(--bg-secondary)',
@@ -54,37 +54,37 @@ export default function BarraEstado() {
         >
             {/* Indicador de grabación */}
             {isTranscribing && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 shrink-0">
                     <span
-                        className="w-2 h-2 rounded-full animate-pulse"
+                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full animate-pulse"
                         style={{ background: 'var(--danger)' }}
                     />
-                    <span style={{ color: 'var(--danger)' }}>REC</span>
+                    <span className="font-bold" style={{ color: 'var(--danger)' }}>REC</span>
                 </div>
             )}
 
             {/* Tiempo */}
-            <span className="font-mono tabular-nums">{formatearTiempo(elapsedSeconds)}</span>
+            <span className="font-mono tabular-nums shrink-0">{formatearTiempo(elapsedSeconds)}</span>
 
             {/* Separador */}
-            <span style={{ opacity: 0.3 }}>│</span>
+            <span className="opacity-30 hidden sm:inline">│</span>
 
             {/* Palabras */}
-            <span>{wordCount.toLocaleString()} palabras</span>
+            <span className="truncate hidden sm:inline">{wordCount.toLocaleString()} pal.</span>
 
             {/* Separador */}
-            <span style={{ opacity: 0.3 }}>│</span>
+            <span className="opacity-30 hidden md:inline">│</span>
 
             {/* Segmentos */}
-            <span>{segmentCount} segmentos</span>
+            <span className="truncate hidden md:inline">{segmentCount} seg.</span>
 
             {/* Separador */}
-            <span style={{ opacity: 0.3 }}>│</span>
+            <span className="opacity-30">│</span>
 
             {/* Precisión promedio con barra visual */}
-            <div className="confidence-meter">
-                <span>Precisión:</span>
-                <div className="confidence-meter__bar">
+            <div className="confidence-meter shrink-0">
+                <span className="hidden xs:inline">Precisión:</span>
+                <div className="confidence-meter__bar w-10 sm:w-12">
                     <div
                         className={`confidence-meter__fill ${confianzaPromedio >= 0.85
                                 ? 'confidence-meter__fill--high'
@@ -96,6 +96,7 @@ export default function BarraEstado() {
                     />
                 </div>
                 <span
+                    className="font-bold"
                     style={{
                         color:
                             confianzaPromedio >= 0.85
@@ -105,7 +106,7 @@ export default function BarraEstado() {
                                     : '#DC2626',
                     }}
                 >
-                    {(confianzaPromedio * 100).toFixed(1)}%
+                    {(confianzaPromedio * 100).toFixed(0)}%
                 </span>
             </div>
 
@@ -113,12 +114,12 @@ export default function BarraEstado() {
             <div className="flex-1" />
 
             {/* Estado de conexión */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
                 <span
-                    className="w-2 h-2 rounded-full"
+                    className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full"
                     style={{ background: colorConexion }}
                 />
-                <span>{textoConexion}</span>
+                <span className="hidden sm:inline">{textoConexion}</span>
             </div>
         </div>
     )

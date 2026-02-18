@@ -53,25 +53,25 @@ function LoginForm() {
                 style={{ background: 'radial-gradient(circle, var(--accent-gold), transparent 70%)' }}
             />
 
-            <div className="relative z-10 w-full max-w-md px-6">
+            <div className="relative z-10 w-full max-w-md px-4 sm:px-6">
                 {/* Logo / Brand */}
-                <div className="text-center mb-10 animate-fade-in">
-                    <div className="logo-monogram mx-auto mb-6" style={{ width: '56px', height: '56px', fontSize: '24px', borderRadius: '12px' }}>
+                <div className="text-center mb-6 sm:mb-10 animate-fade-in">
+                    <div className="logo-monogram mx-auto mb-4 sm:mb-6" style={{ width: '48px', height: '48px', sm: { width: '56px', height: '56px' }, fontSize: '20px', sm: { fontSize: '24px' }, borderRadius: '12px' }}>
                         J
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
                         JudiScribe
                     </h1>
-                    <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                    <p className="mt-2 text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>
                         Transcripción Judicial Inteligente
                     </p>
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
+                    <p className="text-[10px] sm:text-xs mt-1" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
                         Corte Superior de Justicia del Cusco
                     </p>
                 </div>
 
                 {/* Login Card */}
-                <div className="rounded-2xl p-8 animate-fade-in"
+                <div className="rounded-2xl p-6 sm:p-8 animate-fade-in"
                     style={{
                         background: 'var(--bg-surface)',
                         border: '1px solid var(--border-subtle)',
@@ -79,10 +79,10 @@ function LoginForm() {
                         animationDelay: '0.1s',
                     }}>
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                         {/* Email */}
                         <div>
-                            <label className="block text-xs font-medium mb-2 uppercase tracking-wider"
+                            <label className="block text-[10px] sm:text-xs font-medium mb-1.5 sm:mb-2 uppercase tracking-wider"
                                 style={{ color: 'var(--text-muted)' }}>
                                 Correo electrónico
                             </label>
@@ -92,7 +92,7 @@ function LoginForm() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 placeholder="digitador@pj.gob.pe"
-                                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200 focus:ring-2"
+                                className="w-full px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm outline-none transition-all duration-200 focus:ring-2"
                                 style={{
                                     background: 'var(--bg-primary)',
                                     border: '1px solid var(--border-default)',
@@ -104,7 +104,7 @@ function LoginForm() {
 
                         {/* Password */}
                         <div>
-                            <label className="block text-xs font-medium mb-2 uppercase tracking-wider"
+                            <label className="block text-[10px] sm:text-xs font-medium mb-1.5 sm:mb-2 uppercase tracking-wider"
                                 style={{ color: 'var(--text-muted)' }}>
                                 Contraseña
                             </label>
@@ -114,7 +114,7 @@ function LoginForm() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 placeholder="••••••••"
-                                className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-200 focus:ring-2"
+                                className="w-full px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm outline-none transition-all duration-200 focus:ring-2"
                                 style={{
                                     background: 'var(--bg-primary)',
                                     border: '1px solid var(--border-default)',

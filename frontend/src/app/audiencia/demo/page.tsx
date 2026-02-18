@@ -127,143 +127,148 @@ export default function DemoCanvasPage() {
     return (
         <div className="h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
             {/* ── Header ──────────────────────────── */}
-            <header className="flex items-center justify-between px-6 py-3 shrink-0"
-                style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)' }}>
-                <div className="flex items-center gap-4">
-                    <button onClick={() => router.push('/')} className="btn-secondary text-xs">
-                        Volver
+            <header className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 shrink-0 gap-4"
+                style={{ borderBottom: '1px solid var(--border-default)', background: 'var(--bg-secondary)' }}>
+                <div className="flex items-center gap-5 w-full sm:w-auto">
+                    <button onClick={() => router.push('/')} className="btn-secondary text-[10px] shrink-0">
+                        ← Volver
                     </button>
-                    <div>
-                        <h1 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
-                            Demo — Transcripción en Tiempo Real
+                    <div className="overflow-hidden">
+                        <h1 className="text-sm font-bold truncate tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+                            DEMO: TRANSCRIPCIÓN JUDICIAL
                         </h1>
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            Canvas Sprint 2 · Deepgram Nova-3 · 100+ keyterms jurídicos
+                        <p className="text-[10px] font-medium uppercase tracking-[0.15em] opacity-60" style={{ color: 'var(--text-secondary)' }}>
+                            Novum Nova-3 · 100+ Keyterms
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
                     <div className={`connection-indicator ${connectionStatus === 'connected' ? 'connection-indicator--connected' : 'connection-indicator--disconnected'}`}>
                         <span className="connection-indicator__dot" />
-                        {connectionStatus === 'connected' ? 'Conectado' : 'Desconectado'}
+                        {connectionStatus === 'connected' ? 'Sistema en Línea' : 'Fuera de Línea'}
                     </div>
                 </div>
             </header>
 
             {/* ── Controls ──────────────────────────── */}
             {!isTranscribing ? (
-                <div className="px-6 py-3 flex items-center gap-6 shrink-0"
-                    style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)' }}>
-                    <span className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Fuente:</span>
-                    <div className="flex gap-2">
-                        {[
-                            { value: 'microphone' as const, label: 'Micrófono', desc: 'Audio directo' },
-                            { value: 'system' as const, label: 'Sistema', desc: 'Meet / consola' },
-                        ].map((src) => (
-                            <button key={src.value}
-                                onClick={() => setFuenteAudio(src.value)}
-                                className="px-4 py-2 rounded-lg text-sm transition-all"
-                                style={{
-                                    background: fuenteAudio === src.value ? 'var(--accent-soft)' : 'var(--bg-surface)',
-                                    border: `1px solid ${fuenteAudio === src.value ? 'var(--accent-primary)' : 'var(--border-default)'}`,
-                                    color: fuenteAudio === src.value ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                                }}>
-                                <span className="block font-medium">{src.label}</span>
-                                <span className="block mt-0.5 text-xs opacity-60">{src.desc}</span>
-                            </button>
-                        ))}
+                <div className="px-6 py-4 flex flex-col md:flex-row items-start md:items-center gap-6 shrink-0"
+                    style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-primary)' }}>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Entrada:</span>
+                        <div className="flex gap-2">
+                            {[
+                                { value: 'microphone' as const, label: 'Micrófono', desc: 'Directo' },
+                                { value: 'system' as const, label: 'Sistema', desc: 'Virtual' },
+                            ].map((src) => (
+                                <button key={src.value}
+                                    onClick={() => setFuenteAudio(src.value)}
+                                    className="px-5 py-2.5 rounded-[1px] text-[11px] font-bold uppercase tracking-wide transition-all"
+                                    style={{
+                                        background: fuenteAudio === src.value ? 'var(--text-primary)' : 'var(--bg-surface)',
+                                        border: `1px solid ${fuenteAudio === src.value ? 'var(--text-primary)' : 'var(--border-default)'}`,
+                                        color: fuenteAudio === src.value ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                                    }}>
+                                    {src.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <button onClick={iniciarTranscripcion} className="ml-auto btn-primary">
-                        Iniciar Transcripción
+                    <button onClick={iniciarTranscripcion} className="w-full md:w-auto md:ml-auto btn-primary">
+                        Iniciar Sesión de Transcripción
                     </button>
                 </div>
             ) : (
-                <div className="px-6 py-2.5 flex items-center gap-4 shrink-0"
-                    style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)' }}>
-                    <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: 'var(--danger)' }} />
-                        <span className="text-sm font-medium" style={{ color: 'var(--danger)' }}>Grabando</span>
+                <div className="px-6 py-3 flex items-center justify-between gap-4 shrink-0"
+                    style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-primary)' }}>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-[#9B2226]/10 border border-[#9B2226]/20">
+                            <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--danger)' }} />
+                            <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: 'var(--danger)' }}>Grabando en Vivo</span>
+                        </div>
                     </div>
                     <button onClick={detenerTranscripcion}
-                        className="ml-auto btn-secondary"
-                        style={{ background: 'rgba(220, 38, 38, 0.1)', color: 'var(--danger)', borderColor: 'rgba(220, 38, 38, 0.3)' }}>
-                        Detener
+                        className="btn-secondary"
+                        style={{ border: '1px solid var(--danger)', color: 'var(--danger)' }}>
+                        Cerrar Sesión
                     </button>
                 </div>
             )}
 
             {/* Errors */}
             {(wsError || audioError) && (
-                <div className="px-6 py-2.5 text-sm flex items-center gap-2"
-                    style={{ background: 'rgba(220, 38, 38, 0.08)', color: 'var(--danger)', borderBottom: '1px solid rgba(220, 38, 38, 0.2)' }}>
-                    <span style={{ fontWeight: 600 }}>Error:</span> {wsError || audioError}
+                <div className="px-6 py-2 text-[11px] font-bold uppercase tracking-wide flex items-center gap-2"
+                    style={{ background: 'rgba(155, 34, 38, 0.05)', color: 'var(--danger)', borderBottom: '1px solid rgba(155, 34, 38, 0.1)' }}>
+                    <span className="p-1 px-2 bg-red-800 text-white rounded-[1px]">ALERTA:</span> {wsError || audioError}
                 </div>
             )}
 
             {/* ── Main content: 72/28 layout ──────────── */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
                 {/* LEFT: Canvas (72%) */}
-                <div className="flex flex-col" style={{ width: '72%' }}>
+                <div className="flex-1 lg:w-[72%] flex flex-col min-w-0">
                     {segments.length === 0 && !isTranscribing ? (
                         /* Empty state */
                         <div className="canvas-page-area">
                             <div className="canvas-document">
                                 <div className="canvas-document__header">
-                                    <div className="canvas-document__title">Acta de Audiencia</div>
+                                    <div className="canvas-document__title">Acta de Audiencia Virtual</div>
                                     <div className="canvas-document__meta">
-                                        <span>Juzgado Penal Unipersonal</span>
-                                        <span>Demo</span>
-                                        <span>{new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                        <span>Corte Superior de Justicia</span>
+                                        <span>DEMO_SESSION_01</span>
+                                        <span>{new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}</span>
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-center justify-center" style={{ flex: 1, padding: '80px 64px' }}>
-                                    <div className="empty-state-lines mb-6">
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
+                                <div className="flex flex-col items-center justify-center text-center" style={{ flex: 1, padding: '80px 48px' }}>
+                                    <div className="empty-state-lines mb-8 scale-125 opacity-40">
+                                        <span className="bg-[#A68246]"></span>
+                                        <span className="bg-[#A68246]"></span>
+                                        <span className="bg-[#A68246]"></span>
                                     </div>
-                                    <p className="text-base mb-1" style={{ color: 'var(--text-secondary)' }}>
-                                        Presiona &quot;Iniciar Transcripción&quot; para comenzar
+                                    <p className="text-xl font-bold mb-3 tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+                                        Prepare el Registro de la Audiencia
                                     </p>
-                                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                                        El texto aparecerá aquí en tiempo real como un documento Word
+                                    <p className="max-w-md text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                                        El sistema generará el registro oficial en formato de acta judicial utilizando el modelo de lenguaje Novum-3 para máxima precisión jurídica.
                                     </p>
                                 </div>
                             </div>
                         </div>
                     ) : (
                         /* Active canvas */
-                        <TranscriptionCanvas
-                            ref={canvasRef}
-                            soloLectura={false}
-                            hablantes={hablantes}
-                            onSegmentoEditado={handleSegmentoEditado}
-                            onSeekAudio={handleSeekAudio}
-                            documentInfo={{
-                                tipo: 'Acta de Audiencia — Demo',
-                                juzgado: 'Juzgado Penal Unipersonal de Cusco',
-                            }}
-                        />
+                        <div className="flex-1 overflow-hidden relative">
+                            <TranscriptionCanvas
+                                ref={canvasRef}
+                                soloLectura={false}
+                                hablantes={hablantes}
+                                onSegmentoEditado={handleSegmentoEditado}
+                                onSeekAudio={handleSeekAudio}
+                                documentInfo={{
+                                    tipo: 'Acta de Audiencia — Registro Demo',
+                                    juzgado: 'Juzgado Penal Unipersonal de Cusco',
+                                }}
+                            />
+                        </div>
                     )}
                 </div>
 
                 {/* RIGHT: Panels (28%) */}
-                <div className="flex flex-col overflow-y-auto"
+                <aside className="lg:w-[28%] flex flex-col overflow-y-auto border-t lg:border-t-0 lg:border-l"
                     style={{
-                        width: '28%',
-                        borderLeft: '1px solid var(--border-subtle)',
+                        borderColor: 'var(--border-default)',
                         background: 'var(--bg-secondary)',
                     }}>
                     {/* Audio player */}
-                    <ReproductorAudio
-                        ref={audioPlayerRef}
-                        audioUrl={audioUrl}
-                        onTimeUpdate={handleAudioTimeUpdate}
-                    />
+                    <div className="p-2">
+                        <ReproductorAudio
+                            ref={audioPlayerRef}
+                            audioUrl={audioUrl}
+                            onTimeUpdate={handleAudioTimeUpdate}
+                        />
+                    </div>
 
-                    {/* Divider */}
-                    <div style={{ height: 1, background: 'var(--border-subtle)' }} />
+                    <div className="h-px bg-white/10 mx-4" />
 
                     {/* Speakers panel */}
                     <PanelHablantes
@@ -283,8 +288,7 @@ export default function DemoCanvasPage() {
                         onHablanteActualizado={() => { }}
                     />
 
-                    {/* Divider */}
-                    <div style={{ height: 1, background: 'var(--border-subtle)' }} />
+                    <div className="h-px bg-white/10 mx-4" />
 
                     {/* Phrase shortcuts */}
                     <AtajosFrases
@@ -299,19 +303,20 @@ export default function DemoCanvasPage() {
                         ]}
                     />
 
-                    {/* Divider */}
-                    <div style={{ height: 1, background: 'var(--border-subtle)' }} />
+                    <div className="h-px bg-white/10 mx-4" />
 
                     {/* Bookmarks */}
                     <PanelMarcadores
                         audienciaId={DEMO_ID}
                         onSeekAudio={handleSeekAudio}
                     />
-                </div>
+                </aside>
             </div>
 
             {/* ── Status bar ──────────────────────────── */}
-            <BarraEstado />
+            <div className="hidden sm:block">
+                <BarraEstado />
+            </div>
         </div>
     )
 }

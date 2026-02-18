@@ -11,37 +11,38 @@
   --font-body: 'DM Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Tema Claro - Fondos */
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F8F9FA;
-  --bg-surface: #F1F3F5;
-  --bg-elevated: #E9ECEF;
+  /* Parchment and Precision Palette */
+  --bg-primary: #F9F7F2;     /* Aged Paper / Parchment */
+  --bg-secondary: #F4F1EA;   /* Slightly darker parchment */
+  --bg-surface: #FFFFFF;     /* Pure white for the 'paper' */
+  --bg-elevated: #EDE9E1;    /* Deep paper shadow */
 
-  /* Bordes */
-  --border-subtle: rgba(0, 0, 0, 0.06);
-  --border-default: rgba(0, 0, 0, 0.12);
+  /* Borders - Soft Gold/Bronze */
+  --border-subtle: rgba(166, 130, 70, 0.12);
+  --border-default: rgba(166, 130, 70, 0.25);
+  --border-focus: #A68246;
 
-  /* Texto */
-  --text-primary: #1A1A1A;
-  --text-secondary: #4A5568;
-  --text-muted: #718096;
+  /* Texto - Deep Ink */
+  --text-primary: #1A1B1E;   /* Deep charcoal ink */
+  --text-secondary: #42464D;
+  --text-muted: #82868C;
 
-  /* Acentos - Azul judicial */
-  --accent-primary: #2563EB;
-  --accent-soft: rgba(37, 99, 235, 0.1);
-  /* Mantener gold para compatibilidad */
-  --accent-gold: #2563EB;
-  --accent-gold-soft: rgba(37, 99, 235, 0.1);
+  /* Acentos - Judicial Gold */
+  --accent-primary: #A68246;
+  --accent-soft: rgba(166, 130, 70, 0.08);
+  --accent-gold: #A68246;
+  --accent-gold-soft: rgba(166, 130, 70, 0.1);
 
-  /* Semánticos */
-  --danger: #DC2626;
-  --success: #059669;
-  --warning: #D97706;
+  /* Semánticos - Seal Red and Court Green */
+  --danger: #9B2226;         /* Crimson Seal */
+  --success: #1B4332;        /* Dark Forest Green */
+  --warning: #BB8539;
 }
 
 html {
   font-family: var(--font-body);
   color: var(--text-primary);
+  background: var(--bg-primary);
 }
 
 body {
@@ -53,9 +54,9 @@ body {
 
 /* ── Canvas styles — Word-Like Document ─────────────────── */
 
-/* Page area: gray background with centered "paper" */
+/* Page area: parchment background with centered "paper" */
 .canvas-page-area {
-  background: #E8EAED;
+  background: var(--bg-primary);
   flex: 1;
   overflow-y: auto;
   padding: 32px 0;
@@ -63,48 +64,86 @@ body {
   justify-content: center;
 }
 
-/* The "paper" itself — A4-like proportions */
+/* The "paper" itself — A4-like proportions but wider for better clerk experience */
 .canvas-document {
-  background: #FFFFFF;
+  background: var(--bg-surface);
   width: 100%;
-  max-width: 816px;
-  /* ~21cm at 96dpi */
+  max-width: 880px;
   min-height: 1056px;
-  /* ~27.5cm — A4 ratio */
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 8px 24px rgba(0, 0, 0, 0.06);
-  border-radius: 2px;
+    0 4px 24px rgba(166, 130, 70, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1px;
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
+@media (max-width: 768px) {
+  .canvas-document {
+    max-width: 100%;
+    min-height: auto;
+    box-shadow: none;
+    border-radius: 0;
+    border: none;
+  }
+}
+
 /* Document header inside the paper */
 .canvas-document__header {
-  padding: 40px 64px 20px;
-  border-bottom: 2px solid #1A1A1A;
-  margin: 0 0 4px;
+  padding: 48px 80px 32px;
+  border-bottom: 1px solid var(--text-primary);
+  margin: 0 0 8px;
+  position: relative;
+}
+
+/* Decorative corner for the paper */
+.canvas-document__header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(225deg, var(--bg-primary) 50%, rgba(166, 130, 70, 0.1) 50%);
+  border-bottom-left-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .canvas-document__header {
+    padding: 32px 24px 20px;
+  }
 }
 
 .canvas-document__title {
-  font-family: 'Georgia', 'Crimson Pro', serif;
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 16px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #1A1A1A;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .canvas-document__meta {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-body);
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: var(--text-secondary);
   gap: 16px;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .canvas-document__meta {
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    text-align: center;
+  }
 }
 
 .canvas-document__meta span {
@@ -120,28 +159,82 @@ body {
 .canvas-editor .ProseMirror {
   outline: none;
   min-height: 600px;
-  padding: 24px 64px 80px;
-  font-family: 'Georgia', 'Crimson Pro', serif;
-  font-size: 13.5px;
-  line-height: 1.9;
-  color: #1A1A1A;
-  counter-reset: line-number;
+  padding: 40px 96px 160px;
+  font-family: 'Georgia', var(--font-display), serif;
+  font-size: 15px;
+  line-height: 1.85;
+  color: var(--text-primary);
+  width: 100% !important;
+  max-width: none !important;
+}
+
+@media (max-width: 768px) {
+  .canvas-editor .ProseMirror {
+    padding: 24px 24px 100px;
+    min-height: 400px;
+  }
 }
 
 .canvas-editor .ProseMirror p {
-  margin-bottom: 2px;
+  margin-bottom: 12px;
   text-align: justify;
   text-indent: 0;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Speaker label in canvas — formal legal style */
+.speaker-label {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 2px 0;
+  margin-top: 24px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+  width: fit-content;
+}
+
+/* Provisional text (not yet confirmed) */
+.text-provisional {
+  color: var(--text-muted);
+  background: rgba(166, 130, 70, 0.03);
+  border-left: 2px solid var(--accent-gold);
+  padding: 6px 16px;
+  margin: 12px 0;
+  font-style: italic;
+  animation: typing-fade 1.5s infinite alternate;
+  border-radius: 0 2px 2px 0;
+  width: fit-content;
+}
+
+.canvas-editor .ProseMirror p {
+  margin-bottom: 8px;
+  text-align: justify;
+  text-indent: 0;
+  width: 100% !important;
+  max-width: none !important; /* Asegurar que el párrafo use todo el ancho */
 }
 
 /* Provisional text (not yet confirmed by Deepgram) */
 .text-provisional {
-  color: #AAAAAA;
+  color: var(--text-muted);
   background: rgba(37, 99, 235, 0.03);
-  border-left: 2px solid rgba(37, 99, 235, 0.2);
-  padding-left: 8px;
+  border-left: 3px solid rgba(37, 99, 235, 0.1);
+  padding: 4px 12px;
+  margin: 8px 0;
   font-style: italic;
-  transition: all 0.3s ease;
+  animation: typing-fade 2s infinite alternate;
+  border-radius: 0 4px 4px 0;
+  width: fit-content;
+}
+
+@keyframes typing-fade {
+  from { opacity: 0.4; }
+  to { opacity: 0.8; }
 }
 
 /* Confidence-based highlighting */
@@ -415,6 +508,21 @@ body {
 
 /* ── Animations ────────────────────────────────────────── */
 
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  background-color: var(--accent-primary);
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -493,6 +601,11 @@ body {
   background: rgba(37, 99, 235, 0.05);
 }
 
+/* Segmentos de texto deben fluir inline (mismo párrafo) */
+.segment-text {
+  display: inline;
+}
+
 /* ── Empty State Minimalista ─────────────────────────────── */
 
 .empty-state-lines {
@@ -529,12 +642,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-primary);
-  color: white;
+  background: var(--text-primary);
+  color: var(--bg-primary);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 18px;
-  border-radius: 8px;
+  border-radius: 1px;
 }
 
 /* ── Stat Card Minimalista ─────────────────────────────── */
@@ -543,96 +656,139 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 20px 24px;
-  background: var(--bg-secondary);
+  padding: 24px 28px;
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  border-radius: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--accent-gold);
+  opacity: 0.3;
 }
 
 .stat-card__value {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 700;
-  color: var(--accent-primary);
+  color: var(--text-primary);
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  font-family: var(--font-display);
 }
 
 .stat-card__label {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
-/* ── Botón Primario ─────────────────────────────── */
+/* ── Seal Buttons (Primary) ─────────────────────────────── */
 
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: var(--accent-primary);
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 12px 24px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 1px;
   border: none;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: #1d4ed8;
+  background: var(--accent-gold);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .btn-primary:active {
   transform: translateY(0);
 }
 
-/* ── Botón Secundario ─────────────────────────────── */
+/* ── Secondary Buttons ─────────────────────────────── */
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: var(--bg-surface);
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
   color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 1px;
   border: 1px solid var(--border-default);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background: var(--bg-elevated);
-  border-color: var(--border-default);
+  background: var(--accent-soft);
+  border-color: var(--accent-gold);
 }
 
-/* ── Indicador de conexión ─────────────────────────────── */
+/* ── Scrollbar styling ─────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 1px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-gold);
+}
+
+/* ── Connection indicators ─────────────────────────────── */
 
 .connection-indicator {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 1px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-subtle);
 }
 
 .connection-indicator--connected {
-  background: rgba(5, 150, 105, 0.1);
+  background: rgba(27, 67, 50, 0.05);
   color: var(--success);
+  border-color: rgba(27, 67, 50, 0.15);
 }
 
 .connection-indicator--disconnected {
-  background: var(--bg-surface);
+  background: var(--bg-secondary);
   color: var(--text-muted);
 }
 

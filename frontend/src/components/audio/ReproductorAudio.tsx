@@ -143,65 +143,131 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
         )
     }
 
-    return (
-        <div className="px-4 py-4">
-            <h3
-                className="text-xs font-semibold uppercase tracking-wider mb-3"
-                style={{ color: 'var(--text-muted)' }}
-            >
-                Audio
-            </h3>
+        return (
 
-            {/* Onda de audio */}
-            <div
-                ref={contenedorRef}
-                className="rounded-lg overflow-hidden mb-4"
-                style={{ background: 'var(--bg-secondary)' }}
-            />
+            <div className="px-3 sm:px-4 py-3 sm:py-4">
 
-            {/* Controles */}
-            <div className="flex items-center gap-4">
-                {/* Botón Play/Pause con forma CSS */}
-                <button
-                    onClick={toggleReproduccion}
-                    disabled={!cargado}
-                    className={`audio-control ${reproduciendo ? 'audio-control--pause' : 'audio-control--play'}`}
-                    data-tooltip={reproduciendo ? 'Pausar' : 'Reproducir'}
-                    style={{
-                        color: reproduciendo ? 'var(--danger)' : 'var(--accent-primary)',
-                        borderColor: reproduciendo ? 'rgba(220, 38, 38, 0.3)' : 'var(--border-default)',
-                    }}
+                <h3
+
+                    className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-2 sm:mb-3"
+
+                    style={{ color: 'var(--text-muted)' }}
+
+                >
+
+                    Audio
+
+                </h3>
+
+    
+
+                {/* Onda de audio */}
+
+                <div
+
+                    ref={contenedorRef}
+
+                    className="rounded-lg overflow-hidden mb-3 sm:mb-4"
+
+                    style={{ background: 'var(--bg-secondary)' }}
+
                 />
 
-                {/* Tiempo */}
-                <span
-                    className="text-sm font-mono tabular-nums"
-                    style={{ color: 'var(--text-secondary)' }}
-                >
-                    {formatearTiempo(posicion)} / {formatearTiempo(duracion)}
-                </span>
+    
 
-                {/* Slider de velocidad */}
-                <div className="speed-slider ml-auto">
-                    <span>{velocidad.toFixed(1)}x</span>
-                    <input
-                        type="range"
-                        min="0.5"
-                        max="2"
-                        step="0.25"
-                        value={velocidad}
-                        onChange={(e) => {
-                            const nueva = parseFloat(e.target.value)
-                            setVelocidad(nueva)
-                            wavesurferRef.current?.setPlaybackRate(nueva)
+                {/* Controles */}
+
+                <div className="flex items-center gap-3 sm:gap-4">
+
+                    {/* Botón Play/Pause con forma CSS */}
+
+                    <button
+
+                        onClick={toggleReproduccion}
+
+                        disabled={!cargado}
+
+                        className={`audio-control shrink-0 ${reproduciendo ? 'audio-control--pause' : 'audio-control--play'}`}
+
+                        data-tooltip={reproduciendo ? 'Pausar' : 'Reproducir'}
+
+                        style={{
+
+                            color: reproduciendo ? 'var(--danger)' : 'var(--accent-primary)',
+
+                            borderColor: reproduciendo ? 'rgba(220, 38, 38, 0.3)' : 'var(--border-default)',
+
+                            width: '32px',
+
+                            height: '32px'
+
                         }}
-                        title="Velocidad de reproducción"
+
                     />
+
+    
+
+                    {/* Tiempo */}
+
+                    <span
+
+                        className="text-xs sm:text-sm font-mono tabular-nums shrink-0"
+
+                        style={{ color: 'var(--text-secondary)' }}
+
+                    >
+
+                        {formatearTiempo(posicion)} <span className="hidden xs:inline">/ {formatearTiempo(duracion)}</span>
+
+                    </span>
+
+    
+
+                    {/* Slider de velocidad */}
+
+                    <div className="speed-slider ml-auto gap-1 sm:gap-2 px-2 sm:px-3 py-1">
+
+                        <span className="text-[10px] sm:text-xs font-bold">{velocidad.toFixed(1)}x</span>
+
+                        <input
+
+                            type="range"
+
+                            min="0.5"
+
+                            max="2"
+
+                            step="0.25"
+
+                            value={velocidad}
+
+                            onChange={(e) => {
+
+                                const nueva = parseFloat(e.target.value)
+
+                                setVelocidad(nueva)
+
+                                wavesurferRef.current?.setPlaybackRate(nueva)
+
+                            }}
+
+                            className="w-10 sm:w-16"
+
+                            title="Velocidad de reproducción"
+
+                        />
+
+                    </div>
+
                 </div>
+
             </div>
-        </div>
+
+        )
+
+    }
+
     )
-})
 
 ReproductorAudio.displayName = 'ReproductorAudio'
 

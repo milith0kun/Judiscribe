@@ -15,10 +15,40 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useEffect, useRef, useImperativeHandle, forwardRef, useCallback, useMemo } from 'react'
+import { useEffect, useRef, useImperativeHandle, forwardRef, useCallback, useMemo, useState } from 'react'
 import { useCanvasStore } from '@/stores/canvasStore'
-import { SpeakerNode, SegmentMark, LowConfidenceMark, BookmarkNode } from '@/extensions'
+import { SpeakerNode, SegmentMark, LowConfidenceMark, BookmarkNode, ProvisionalNode } from '@/extensions'
+import WordCorrectionPopover from './WordCorrectionPopover'
+import { getSuggestions } from '@/lib/fuzzyMatch'
+import { LEGAL_CORPUS } from '@/lib/legalCorpus'
 import type { Segmento } from '@/types'
+
+/* ── Palabras gramaticales que NO deben marcarse como baja confianza ── */
+const GRAMMAR_WORDS = new Set([
+    // Artículos
+    'el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas',
+    // Preposiciones
+    'a', 'de', 'en', 'con', 'por', 'para', 'sin', 'sobre', 'entre',
+    'hacia', 'hasta', 'desde', 'durante', 'mediante', 'según', 'ante', 'bajo',
+    // Conjunciones
+    'y', 'e', 'o', 'u', 'que', 'si', 'pero', 'sino', 'porque', 'aunque',
+    'cuando', 'como', 'donde', 'mientras', 'ni', 'ya',
+    // Pronombres
+    'yo', 'tú', 'él', 'ella', 'usted', 'nosotros', 'ustedes', 'ellos', 'ellas',
+    'me', 'te', 'se', 'nos', 'le', 'les', 'lo', 'la', 'los', 'las',
+    'mi', 'tu', 'su', 'mis', 'tus', 'sus', 'nuestro', 'nuestra',
+    // Demostrativos
+    'este', 'esta', 'estos', 'estas', 'ese', 'esa', 'esos', 'esas',
+    'aquel', 'aquella', 'aquellos', 'aquellas', 'esto', 'eso', 'aquello',
+    // Adverbios comunes
+    'no', 'sí', 'muy', 'más', 'menos', 'bien', 'mal', 'aquí', 'allí', 'ahí',
+    'hoy', 'ayer', 'mañana', 'ahora', 'siempre', 'nunca', 'también', 'tampoco',
+    // Verbos auxiliares/comunes
+    'es', 'son', 'fue', 'era', 'ha', 'han', 'he', 'hay', 'ser', 'estar',
+    'tiene', 'tienen', 'tengo', 'fue', 'fueron', 'sido', 'siendo',
+    // Palabras procesales comunes
+    'señor', 'señora', 'doctor', 'doctora', 'juez', 'fiscal',
+])
 
 /* ── Types ──────────────────────────────────────────── */
 
@@ -41,6 +71,17 @@ interface DocumentInfo {
     tipo?: string
     juzgado?: string
     fecha?: string
+}
+
+interface PopoverState {
+    isOpen: boolean
+    word: string
+    confidence: number
+    pos: { from: number; to: number }
+    screenPos: { x: number; y: number }
+    segmentId: string
+    sentenceContext: string  // Contexto de la frase completa
+    alternatives: Array<{ word: string; confidence: number }>  // Alternativas de Deepgram
 }
 
 interface CanvasProps {
@@ -89,6 +130,17 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         updateSegment,
     } = useCanvasStore()
 
+    const [popover, setPopover] = useState<PopoverState>({
+        isOpen: false,
+        word: '',
+        confidence: 0,
+        pos: { from: 0, to: 0 },
+        screenPos: { x: 0, y: 0 },
+        segmentId: '',
+        sentenceContext: '',
+        alternatives: [],
+    })
+
     const prevSegmentCountRef = useRef(0)
     const autoScrollRef = useRef(true)
     const containerRef = useRef<HTMLDivElement>(null)
@@ -136,15 +188,63 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
             SegmentMark,
             LowConfidenceMark,
             BookmarkNode,
+            ProvisionalNode,
         ],
         editable: !soloLectura,
         content: '',
         editorProps: {
             attributes: {
-                class: 'prose max-w-none focus:outline-none min-h-[200px]',
+                class: 'focus:outline-none min-h-[600px] w-full',
             },
-            handleClick: (_view, _pos, event) => {
+            handleClick: (view, pos, event) => {
                 const target = event.target as HTMLElement
+
+                // 1. Check for low-confidence words
+                const lowConfEl = target.closest('[data-low-confidence="true"]') as HTMLElement
+                if (lowConfEl) {
+                    const word = lowConfEl.innerText.trim()
+                    const confidence = parseFloat(lowConfEl.getAttribute('data-confidence') || '0')
+                    const segmentEl = target.closest('[data-segment-id]') as HTMLElement
+                    const segmentId = segmentEl?.getAttribute('data-segment-id') || ''
+
+                    // Obtener el contexto de la frase (texto del segmento)
+                    const sentenceContext = segmentEl?.textContent?.trim() || ''
+
+                    // Buscar el segmento en el store para obtener alternativas
+                    const segmentData = segments.find(s => s.id === segmentId)
+                    let alternatives: Array<{ word: string; confidence: number }> = []
+
+                    if (segmentData?.palabras_json) {
+                        // Buscar la palabra en palabras_json para obtener alternativas
+                        const wordData = segmentData.palabras_json.find(
+                            (w: any) => w.word.toLowerCase() === word.toLowerCase()
+                        )
+                        if (wordData?.alternatives) {
+                            alternatives = wordData.alternatives.map((alt: any) => ({
+                                word: alt.word || alt,
+                                confidence: alt.confidence || 0.8
+                            }))
+                        }
+                    }
+
+                    // Find Prosemirror position for replacement
+                    const nodePos = view.posAtDOM(lowConfEl, 0)
+                    const nodeSize = lowConfEl.innerText.length
+
+                    setPopover({
+                        isOpen: true,
+                        word,
+                        confidence,
+                        pos: { from: nodePos, to: nodePos + nodeSize },
+                        screenPos: { x: event.clientX, y: event.clientY },
+                        segmentId,
+                        sentenceContext,
+                        alternatives,
+                    })
+                    return true
+                }
+
+                // 2. Check for segment clicks (seek audio)
                 const segmentEl = target.closest('[data-segment-id]') as HTMLElement
                 if (segmentEl && onSeekAudio) {
                     const timestamp = parseFloat(segmentEl.getAttribute('data-timestamp') || '0')
@@ -233,50 +333,70 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         if (segments.length <= prevSegmentCountRef.current) return
 
         const nuevos = segments.slice(prevSegmentCountRef.current)
+        const prevCount = prevSegmentCountRef.current
         prevSegmentCountRef.current = segments.length
 
-        // Remover texto provisional antes de agregar segmentos finales
-        const provisionalNodes = editor.view.dom.querySelectorAll('[data-provisional="true"]')
-        provisionalNodes.forEach(node => node.remove())
+        // Remover texto provisional usando comando de TipTap
+        editor.commands.removeProvisional()
 
-        let currentParagraph = ''
-        let currentSpeaker = ''
-        const paragraphs: string[] = []
+        // Determinar si el primer segmento nuevo es del mismo speaker que el último existente
+        const lastExistingSeg = prevCount > 0 ? segments[prevCount - 1] : null
+        const firstNewSeg = nuevos[0]
+        const continueSameSpeaker = lastExistingSeg?.speaker_id === firstNewSeg?.speaker_id
+
+        let htmlParts: string[] = []
 
         nuevos.forEach((seg, idx) => {
             const globalIdx = segments.indexOf(seg)
             const prevSeg = globalIdx > 0 ? segments[globalIdx - 1] : null
             const newSpeaker = prevSeg?.speaker_id !== seg.speaker_id
             const { etiqueta, color } = getSpeakerInfo(seg.speaker_id)
-            const texto = seg.texto_editado || seg.texto_ia
-            const isEdited = editedSegmentIds.has(seg.id)
+            const texto = seg.texto_editado || seg.texto_mejorado || seg.texto_ia
+            const isEdited = editedSegmentIds.includes(seg.id)
             const timestamp = seg.timestamp_inicio || 0
 
             const classes = ['segment-clickable']
-            if (seg.confianza < 0.7) classes.push('text-low-confidence')
             if (isEdited) classes.push('segment-edited')
 
-            // Si cambia el speaker, cerrar párrafo anterior y empezar uno nuevo
+            // Si cambia el speaker, insertar etiqueta
             if (newSpeaker) {
-                if (currentParagraph) {
-                    paragraphs.push(`<p style="margin:0.5rem 0;line-height:1.6;">${currentParagraph}</p>`)
-                }
-                // Nueva etiqueta de speaker
-                paragraphs.push(`<div data-speaker-id="${seg.speaker_id}" style="display:inline-block;font-weight:700;text-transform:uppercase;font-size:0.75rem;letter-spacing:0.05em;padding:2px 8px;border-radius:4px;margin-top:0.75rem;margin-bottom:0.25rem;color:${color};background:${color}12;border-left:3px solid ${color};user-select:none;cursor:default;">${etiqueta}</div>`)
-                currentParagraph = ''
-                currentSpeaker = seg.speaker_id
+                htmlParts.push(`<speaker-label speakerId="${seg.speaker_id}" label="${etiqueta}" color="${color}"></speaker-label>`)
             }
 
-            // Agregar segmento al párrafo actual
-            currentParagraph += `<span class="${classes.join(' ')}" data-segment-id="${seg.id}" data-timestamp="${timestamp}" data-edited="${isEdited}" style="cursor:pointer;">${texto}</span> `
+            // Construir el texto del segmento palabra por palabra
+            let segmentHtml = ''
+            if (seg.palabras_json && seg.palabras_json.length > 0) {
+                seg.palabras_json.forEach((wordObj: any) => {
+                    const wordText = wordObj.word
+                    const conf = wordObj.confidence
+                    const wordLower = wordText.toLowerCase().replace(/[.,;:!?]/g, '')
+
+                    // Solo marcar como baja confianza si:
+                    // 1. Confianza < 0.7
+                    // 2. NO es una palabra gramatical común
+                    // 3. Tiene más de 2 caracteres (evitar marcas en artículos cortos)
+                    const shouldMark = conf < 0.7 &&
+                        !GRAMMAR_WORDS.has(wordLower) &&
+                        wordLower.length > 2
+
+                    if (shouldMark) {
+                        const confPercent = Math.round(conf * 100)
+                        segmentHtml += `<span class="text-low-confidence" data-low-confidence="true" data-confidence="${conf}" data-segment-id="${seg.id}" title="Confianza: ${confPercent}%">${wordText}</span> `
+                    } else {
+                        segmentHtml += `${wordText} `
+                    }
+                })
+            } else {
+                segmentHtml = texto + ' '
+            }
+
+            // Agregar segmento como span inline (sin párrafo extra)
+            const segmentClasses = ['segment-text', ...classes]
+            htmlParts.push(`<span class="${segmentClasses.join(' ')}" data-segment-id="${seg.id}" data-timestamp="${timestamp}" data-edited="${isEdited}">${segmentHtml}</span>`)
         })
 
-        // Cerrar el último párrafo
-        if (currentParagraph) {
-            paragraphs.push(`<p style="margin:0.5rem 0;line-height:1.6;">${currentParagraph}</p>`)
-        }
-
-        const html = paragraphs.join('')
+        // Insertar contenido inline (sin envolver en párrafos innecesarios)
+        const html = htmlParts.join('')
         editor.chain().focus('end').insertContent(html).run()
 
         // Auto-scroll to bottom
@@ -315,19 +435,23 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
     useEffect(() => {
         if (!editor) return
 
-        // Remove old provisional nodes
-        const provisionalNodes = editor.view.dom.querySelectorAll('[data-provisional="true"]')
-        provisionalNodes.forEach(node => node.remove())
+        // Remover provisional anterior siempre antes de actualizar
+        editor.commands.removeProvisional()
 
-        // Append new provisional
+        // Append new provisional using ProvisionalNode
         if (provisionalText && provisionalText.trim()) {
-            const { etiqueta, color } = getSpeakerInfo(provisionalSpeaker || 'SPEAKER_00')
-            const html = `<div data-provisional="true" style="color:${color};opacity:0.5;font-style:italic;margin:0.25rem 0;padding:0.25rem 0.5rem;border-left:3px solid ${color}33;background:${color}08;transition:opacity 0.2s;"><em>${provisionalText}</em></div>`
-            editor.chain().focus('end').insertContent(html).run()
+            const { color } = getSpeakerInfo(provisionalSpeaker || 'SPEAKER_00')
+            
+            editor.chain().focus('end').setProvisional({
+                text: provisionalText,
+                speakerId: provisionalSpeaker || 'SPEAKER_00',
+                color: color
+            }).run()
 
             if (autoScrollRef.current) {
                 requestAnimationFrame(() => {
-                    editor.view.dom.scrollTop = editor.view.dom.scrollHeight
+                    const el = editor.view.dom
+                    el.scrollTop = el.scrollHeight
                 })
             }
         }
@@ -365,6 +489,37 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
 
     /* ── Render ──────────────────────────────────────── */
 
+    const handleCorrectionSelect = (newWord: string) => {
+        if (!editor) return
+
+        // Replace the low-confidence word in the editor
+        editor.chain()
+            .focus()
+            .deleteRange({ from: popover.pos.from, to: popover.pos.to })
+            .insertContent(newWord)
+            .run()
+
+        // After TipTap update, trigger onUpdate to sync with store/backend
+        const updatedText = editor.state.doc.textBetween(0, editor.state.doc.content.size, ' ')
+        // (Simplified text extraction — in onUpdate we already handle this by segment)
+
+        setPopover(prev => ({ ...prev, isOpen: false }))
+    }
+
+    const handleCorrectionAccept = () => {
+        if (!editor) return
+
+        // Mark this word as accepted (remove low-confidence styling)
+        // We can just unset the mark or similar.
+        // Actually, since we're using raw HTML for initial rendering,
+        // we might just want to remove the class.
+        // But TipTap doesn't "know" about the span class if it's not a Mark.
+
+        // For now, let's just close the popover.
+        // In a more advanced version, we'd clear the mark.
+        setPopover(prev => ({ ...prev, isOpen: false }))
+    }
+
     const docDate = documentInfo?.fecha || new Date().toLocaleDateString('es-PE', {
         year: 'numeric', month: 'long', day: 'numeric'
     })
@@ -388,6 +543,22 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
                 <div className="canvas-editor">
                     <EditorContent editor={editor} />
                 </div>
+
+                {/* Correction Popover */}
+                <WordCorrectionPopover
+                    isOpen={popover.isOpen}
+                    originalWord={popover.word}
+                    confidence={popover.confidence}
+                    position={popover.screenPos}
+                    sentenceContext={popover.sentenceContext}
+                    alternatives={[
+                        ...popover.alternatives,
+                        ...getSuggestions(popover.word, LEGAL_CORPUS)
+                    ]}
+                    onSelect={handleCorrectionSelect}
+                    onAccept={handleCorrectionAccept}
+                    onClose={() => setPopover(prev => ({ ...prev, isOpen: false }))}
+                />
 
                 {/* Scroll indicator — shows when auto-scroll is off */}
                 {!autoScrollRef.current && segments.length > 3 && (

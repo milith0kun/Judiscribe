@@ -63,19 +63,21 @@ const SpeakerNode = Node.create<SpeakerNodeOptions>({
                 class: 'speaker-label',
                 'data-speaker-id': speakerId,
                 style: `
-                    display: inline-block;
+                    display: block;
                     font-weight: 700;
                     text-transform: uppercase;
-                    font-size: 0.8rem;
-                    letter-spacing: 0.04em;
-                    padding: 3px 10px;
+                    font-size: 0.75rem;
+                    letter-spacing: 0.05em;
+                    padding: 4px 10px;
                     border-radius: 4px;
-                    margin-top: 1rem;
+                    margin-top: 1.5rem;
                     margin-bottom: 0.5rem;
                     color: ${color};
-                    background: ${color}15;
+                    background: ${color}12;
+                    border-left: 3px solid ${color};
                     user-select: none;
                     cursor: default;
+                    width: fit-content;
                 `,
             }),
             label,

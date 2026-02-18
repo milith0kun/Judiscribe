@@ -65,26 +65,26 @@ export default function NuevaAudienciaPage() {
     return (
         <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
             {/* Header */}
-            <header className="px-8 py-5 flex items-center gap-4"
+            <header className="px-4 sm:px-8 py-4 sm:py-5 flex items-center gap-4"
                 style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                 <button onClick={() => router.push('/')}
-                    className="btn-secondary text-sm">
+                    className="btn-secondary text-xs sm:text-sm">
                     Volver
                 </button>
-                <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+                <h1 className="text-base sm:text-lg font-bold truncate" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
                     Nueva Audiencia
                 </h1>
             </header>
 
-            <main className="max-w-3xl mx-auto px-8 py-8">
+            <main className="max-w-3xl mx-auto px-4 sm:px-8 py-6 sm:py-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Section: Datos del expediente */}
-                    <section className="rounded-2xl p-6"
+                    <section className="rounded-2xl p-4 sm:p-6"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
-                        <h2 className="text-sm font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--text-muted)' }}>
+                        <h2 className="text-[10px] sm:text-sm font-semibold uppercase tracking-wider mb-4 sm:mb-5" style={{ color: 'var(--text-muted)' }}>
                             Datos del Expediente
                         </h2>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>
                                     N° Expediente *
@@ -147,12 +147,12 @@ export default function NuevaAudienciaPage() {
                     </section>
 
                     {/* Section: Datos de la causa */}
-                    <section className="rounded-2xl p-6"
+                    <section className="rounded-2xl p-4 sm:p-6"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
-                        <h2 className="text-sm font-semibold uppercase tracking-wider mb-5" style={{ color: 'var(--text-muted)' }}>
+                        <h2 className="text-[10px] sm:text-sm font-semibold uppercase tracking-wider mb-4 sm:mb-5" style={{ color: 'var(--text-muted)' }}>
                             Datos de la Causa
                         </h2>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Sala</label>
                                 <input type="text" value={form.sala || ''}

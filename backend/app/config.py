@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # ── Anthropic ────────────────────────────────────────
     ANTHROPIC_API_KEY: str = ""
-    ANTHROPIC_MODEL: str = "claude-3-5-haiku-20241022"  # Haiku = rápido y económico
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"  # Sonnet 4 para mejoramiento en tiempo real
 
     # ── HuggingFace ──────────────────────────────────────
     HF_TOKEN: str = ""

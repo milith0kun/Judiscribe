@@ -21,6 +21,7 @@ from app.database import async_session
 from app.models.audiencia import Audiencia
 from app.models.segmento import Segmento
 from app.services.deepgram_streaming import DeepgramStreamingService
+from app.services.real_time_enhancement import get_enhancement_service
 
 logger = logging.getLogger(__name__)
 
@@ -52,38 +53,304 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
     wav_file.setframerate(16000)
 
     segment_counter = 0
+    enhancement_service = get_enhancement_service()
+    previous_segments = []  # Contexto para mejoramiento
+    
+    # Buffer de consolidación - acumula segmentos del mismo speaker hasta completar frase
+    consolidation_buffer = {
+        "speaker_id": None,
+        "segments": [],  # Lista de textos parciales
+        "timestamps": [],  # Start/end de cada segmento
+        "words": [],  # Todas las palabras acumuladas
+        "last_check_length": 0,  # Para evitar chequeos repetitivos
+    }
+    
+    # Palabras que indican frase incompleta (conectores, preposiciones)
+    INCOMPLETE_ENDINGS = [
+        "que", "para", "y", "o", "si", "pero", "cuando", "porque",
+        "a", "de", "con", "en", "por", "sin", "sobre", "hasta",
+        "desde", "hacia", "ante", "bajo", "según", "mediante",
+        "durante", "como", "cual", "cuales", "quien", "quienes",
+        "donde", "adonde", "el", "la", "los", "las", "un", "una",
+        "unos", "unas", "este", "esta", "estos", "estas", "ese",
+        "esa", "esos", "esas", "aquel", "aquella", "aquellos", "aquellas"
+    ]
+
+    # Respuestas cortas VÁLIDAS en contexto judicial (no requieren continuación)
+    COMPLETE_SHORT_RESPONSES = {
+        # Afirmaciones/negaciones
+        "sí", "si", "no", "correcto", "exacto", "afirmativo", "negativo",
+        # Respuestas procesales
+        "niego", "afirmo", "consiento", "me opongo", "acepto", "rechazo",
+        "de acuerdo", "conforme", "me acojo", "me allano", "desisto",
+        # Juramentaciones
+        "lo juro", "sí juro", "prometo decir la verdad",
+        # Identificaciones
+        "presente", "ausente", "notificado",
+        # Confirmaciones de entendimiento
+        "entendido", "comprendido", "así es", "efectivamente",
+        # Solicitudes breves
+        "protesto", "objeción", "reservo", "me reservo",
+    }
+
+    # Palabras interrogativas para detectar preguntas
+    QUESTION_STARTERS = {
+        "qué", "que", "cómo", "como", "cuándo", "cuando", "dónde", "donde",
+        "por qué", "quién", "quien", "cuál", "cual", "cuánto", "cuanto",
+        "para qué", "acaso", "puede", "podría", "sabe", "conoce", "recuerda",
+    }
+
+    def _is_incomplete_by_pattern(text: str) -> bool:
+        """Determina si el texto parece incompleto por patrones simples."""
+        if not text or not text.strip():
+            return False
+
+        clean_text = text.strip().lower()
+        words = clean_text.split()
+        if not words:
+            return False
+
+        # Verificar si es una respuesta corta válida (completa por definición)
+        if clean_text.rstrip('.,;:!?') in COMPLETE_SHORT_RESPONSES:
+            return False  # Está completa, no es incompleta
+
+        last_word = words[-1].rstrip('.,;:!?')
+
+        # Termina en palabra conectora
+        if last_word in INCOMPLETE_ENDINGS:
+            return True
+
+        # Muy corto (menos de 3 palabras) PERO no es respuesta corta válida
+        if len(words) < 3:
+            # Si tiene 1-2 palabras y termina en puntuación, puede estar completa
+            if text.strip()[-1] in '.?!':
+                return False
+            return True
+
+        # No termina en puntuación (y no es muy corto)
+        if len(words) >= 3 and not text.strip()[-1] in '.?!':
+            # Pero si tiene más de 15 palabras sin puntuación, probablemente está completo
+            if len(words) > 15:
+                return False
+            return True
+
+        return False
+
+    def _looks_like_question(text: str) -> bool:
+        """Detecta si el texto parece ser una pregunta basándose en palabras interrogativas."""
+        if not text or not text.strip():
+            return False
+
+        clean_text = text.strip().lower()
+        first_word = clean_text.split()[0] if clean_text.split() else ""
+
+        # Verifica si empieza con palabra interrogativa
+        if first_word in QUESTION_STARTERS:
+            return True
+
+        # Verifica si tiene estructura de pregunta indirecta
+        if any(clean_text.startswith(q) for q in ["es cierto que", "verdad que", "acaso"]):
+            return True
+
+        return False
+
+    async def _process_consolidated_segment():
+        """Procesa el buffer de consolidación como un único segmento mejorado."""
+        nonlocal segment_counter, consolidation_buffer, previous_segments
+        
+        if not consolidation_buffer["segments"]:
+            return
+        
+        # Texto completo consolidado
+        consolidated_text = " ".join(consolidation_buffer["segments"])
+        speaker_id = consolidation_buffer["speaker_id"]
+        start_time = consolidation_buffer["timestamps"][0]["start"]
+        end_time = consolidation_buffer["timestamps"][-1]["end"]
+        all_words = consolidation_buffer["words"]
+        
+        # Calcular confianza promedio
+        avg_confidence = sum(w.get("confidence", 1.0) for w in all_words) / len(all_words) if all_words else 1.0
+        
+        # Mejorar con Claude
+        try:
+            enhancement = await enhancement_service.enhance_segment(
+                text=consolidated_text,
+                speaker_id=speaker_id,
+                previous_segments=previous_segments,
+            )
+            
+            texto_mejorado = enhancement["enhanced"]
+            enhancement_confidence = enhancement["confidence"]
+            is_question = enhancement["is_question"]
+            
+            logger.info(f"Enhanced: '{consolidated_text[:50]}...' → '{texto_mejorado[:50]}...'")
+            
+        except Exception as enhance_err:
+            logger.warning(f"Enhancement failed, using original: {enhance_err}")
+            texto_mejorado = consolidated_text
+            enhancement_confidence = 0.0
+            is_question = False
+        
+        # Actualizar contexto ANTES de enviar (para próximas decisiones)
+        previous_segments.append({
+            "speaker_id": speaker_id,
+            "texto_ia": consolidated_text,
+            "texto_mejorado": texto_mejorado,
+        })
+        
+        if len(previous_segments) > 25:
+            previous_segments.pop(0)
+        
+        # Enviar segmento consolidado y mejorado al frontend
+        segment_counter += 1
+        result_to_send = {
+            "type": "transcript",
+            "is_final": True,
+            "speaker": speaker_id,
+            "text": consolidated_text,
+            "texto_mejorado": texto_mejorado,
+            "is_question": is_question,
+            "enhancement_confidence": enhancement_confidence,
+            "confidence": avg_confidence,
+            "start": start_time,
+            "end": end_time,
+            "words": all_words,
+        }
+        
+        await websocket.send_json(result_to_send)
+        
+        # Guardar en base de datos
+        try:
+            async with async_session() as db:
+                segmento = Segmento(
+                    audiencia_id=uuid.UUID(audiencia_id),
+                    speaker_id=speaker_id,
+                    texto_ia=consolidated_text,
+                    texto_mejorado=texto_mejorado,
+                    timestamp_inicio=start_time,
+                    timestamp_fin=end_time,
+                    confianza=avg_confidence,
+                    es_provisional=False,
+                    fuente="streaming",
+                    orden=segment_counter,
+                    palabras_json=all_words,
+                )
+                db.add(segmento)
+                await db.commit()
+        except Exception as db_err:
+            logger.debug(f"Segment not persisted (demo mode?): {db_err}")
+        
+        # Limpiar buffer completamente
+        consolidation_buffer["speaker_id"] = speaker_id  # Mantener speaker
+        consolidation_buffer["segments"] = []
+        consolidation_buffer["timestamps"] = []
+        consolidation_buffer["words"] = []
+        consolidation_buffer["last_check_length"] = 0
 
     async def on_transcript(result: dict):
         """Callback invoked for each Deepgram transcript result."""
-        nonlocal segment_counter
+        nonlocal segment_counter, consolidation_buffer
+        
         try:
-            # Send to client always
-            await websocket.send_json(result)
-
-            # Persist final segments to DB (skip gracefully if audiencia doesn't exist)
-            if result.get("is_final", False):
-                segment_counter += 1
-                try:
-                    async with async_session() as db:
-                        segmento = Segmento(
-                            audiencia_id=uuid.UUID(audiencia_id),
-                            speaker_id=result["speaker"],
-                            texto_ia=result["text"],
-                            timestamp_inicio=result["start"],
-                            timestamp_fin=result["end"],
-                            confianza=result["confidence"],
-                            es_provisional=False,
-                            fuente="streaming",
-                            orden=segment_counter,
-                            palabras_json=result.get("words"),
+            current_speaker = result["speaker"]
+            is_final = result.get("is_final", False)
+            
+            # Enviar resultados provisionales al frontend sin modificar
+            if not is_final:
+                await websocket.send_json(result)
+                return
+            
+            # Para resultados finales: acumular en buffer de consolidación
+            # Si cambia el speaker, procesar buffer anterior y empezar nuevo
+            if consolidation_buffer["speaker_id"] is not None and consolidation_buffer["speaker_id"] != current_speaker:
+                # Cambió el speaker - procesar lo acumulado del speaker anterior
+                if consolidation_buffer["segments"]:
+                    logger.info(f"Speaker changed: {consolidation_buffer['speaker_id']} → {current_speaker}, processing buffer")
+                    await _process_consolidated_segment()
+                
+                # Reiniciar buffer para nuevo speaker
+                consolidation_buffer["speaker_id"] = current_speaker
+                consolidation_buffer["segments"] = []
+                consolidation_buffer["timestamps"] = []
+                consolidation_buffer["words"] = []
+                consolidation_buffer["last_check_length"] = 0
+            
+            # Si es el primer segmento, establecer speaker
+            if consolidation_buffer["speaker_id"] is None:
+                consolidation_buffer["speaker_id"] = current_speaker
+            
+            # Agregar segmento actual al buffer
+            consolidation_buffer["segments"].append(result["text"])
+            consolidation_buffer["timestamps"].append({
+                "start": result["start"],
+                "end": result["end"],
+            })
+            if result.get("words"):
+                consolidation_buffer["words"].extend(result["words"])
+            
+            # Construir texto completo del buffer
+            buffer_text = " ".join(consolidation_buffer["segments"])
+            word_count = len(buffer_text.split())
+            
+            # Chequeo simple de completitud por patrones
+            looks_incomplete = _is_incomplete_by_pattern(buffer_text)
+            
+            # Decisión de procesar:
+            should_process = False
+            reason = ""
+            
+            # 1. Si tiene más de 50 palabras, procesar (límite de seguridad)
+            if word_count > 50:
+                should_process = True
+                reason = f"límite de palabras ({word_count})"
+            
+            # 2. Si NO parece incompleto por patrones, procesar
+            elif not looks_incomplete:
+                should_process = True
+                reason = "frase parece completa (no termina en conector)"
+            
+            # 3. Si parece incompleto PERO tiene más de 20 palabras, chequear con Claude
+            elif looks_incomplete and word_count > 20:
+                # Solo chequear con Claude si el buffer creció significativamente
+                if word_count - consolidation_buffer["last_check_length"] >= 5:
+                    try:
+                        logger.info(f"Checking completion with Claude: '{buffer_text[:60]}...'")
+                        completion_check = await enhancement_service.is_sentence_complete(
+                            text=buffer_text,
+                            speaker_id=current_speaker,
+                            previous_segments=previous_segments,
                         )
-                        db.add(segmento)
-                        await db.commit()
-                except Exception as db_err:
-                    logger.debug(f"Segment not persisted (demo mode?): {db_err}")
+                        consolidation_buffer["last_check_length"] = word_count
+                        
+                        if completion_check["is_complete"]:
+                            should_process = True
+                            reason = f"Claude confirmó completitud: {completion_check['reason']}"
+                        else:
+                            reason = f"Claude dice incompleto: {completion_check['reason']}"
+                    except Exception as check_err:
+                        logger.warning(f"Claude check failed: {check_err}, using pattern")
+                        # Si falla Claude, confiar en el patrón
+                        pass
+            
+            if should_process:
+                logger.info(f"Processing buffer ({word_count} palabras): {reason}")
+                await _process_consolidated_segment()
+            else:
+                # Frase incompleta - enviar como provisional para feedback visual
+                logger.debug(f"Buffer incompleto ({word_count} palabras): {reason}")
+                await websocket.send_json({
+                    "type": "transcript",
+                    "is_final": False,  # Provisional
+                    "speaker": current_speaker,
+                    "text": buffer_text,
+                    "confidence": result["confidence"],
+                    "start": consolidation_buffer["timestamps"][0]["start"],
+                    "end": consolidation_buffer["timestamps"][-1]["end"],
+                    "words": consolidation_buffer["words"],
+                })
 
         except Exception as e:
-            logger.error(f"Error processing transcript: {e}")
+            logger.error(f"Error processing transcript: {e}", exc_info=True)
 
     async def on_utterance_end(data: dict):
         """Deepgram signals end of an utterance."""

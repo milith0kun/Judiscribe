@@ -48,6 +48,30 @@ PROCESAL_PENAL = [
     "acuerdo reparatorio",
 ]
 
+# ── Delitos Frecuentes (términos modernos) ────────────────
+DELITOS_FRECUENTES = [
+    "feminicidio",
+    "violación sexual",
+    "trata de personas",
+    "lavado de activos",
+    "organización criminal",
+    "corrupción de funcionarios",
+    "cohecho",
+    "peculado",
+    "colusión",
+    "robo agravado",
+    "hurto agravado",
+    "extorsión",
+    "secuestro",
+    "homicidio calificado",
+    "lesiones graves",
+    "violencia familiar",
+    "agresiones en contra de las mujeres",
+    "acoso sexual",
+    "tráfico ilícito de drogas",
+    "microcomercialización",
+]
+
 # ── Partes / Actores ────────────────────────────────────
 PARTES_PROCESALES = [
     "imputado",
@@ -130,17 +154,19 @@ REGIONAL = [
 def get_keyterms(max_terms: int = 100) -> list[str]:
     """
     Return a prioritized list of legal keyterms for Deepgram.
-    
+
     Categories are ordered by importance for transcription accuracy:
     1. Procesal penal (most frequent errors)
-    2. Partes procesales (speaker identification)
-    3. Prisión preventiva (common hearing type)
-    4. Institucional  
-    5. Normativa
-    6. Regional
+    2. Delitos frecuentes (términos modernos)
+    3. Partes procesales (speaker identification)
+    4. Prisión preventiva (common hearing type)
+    5. Institucional
+    6. Normativa
+    7. Regional
     """
     all_terms = (
         PROCESAL_PENAL
+        + DELITOS_FRECUENTES
         + PARTES_PROCESALES
         + PRISION_PREVENTIVA
         + INSTITUCIONAL

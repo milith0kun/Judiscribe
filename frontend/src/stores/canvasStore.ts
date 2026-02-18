@@ -32,8 +32,8 @@ interface CanvasState {
     activeSegmentId: string | null
     isSeeking: boolean
 
-    // Edited segments tracking
-    editedSegmentIds: Set<string>
+    // Edited segments tracking (array for Zustand reactivity)
+    editedSegmentIds: string[]
 
     // Bookmarks
     bookmarks: Bookmark[]
@@ -75,34 +75,73 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     activeSegmentId: null,
     isSeeking: false,
 
-    // Edited segments tracking
-    editedSegmentIds: new Set<string>(),
+    // Edited segments tracking (array for Zustand reactivity)
+    editedSegmentIds: [],
 
     // Bookmarks
     bookmarks: [],
 
     addSegment: (segment) =>
         set((state) => {
-            // Deduplicar: no agregar si ya existe un segmento con el mismo texto y speaker cercano en el tiempo
-            const isDuplicate = state.segments.some(s => {
-                const sameText = s.texto_ia.trim() === segment.texto_ia.trim()
+            // Detectar si este segmento es una extensión/actualización/consolidación de uno anterior
+            // (mismo speaker, timestamp de inicio muy cercano o contenido que se extiende)
+            const extensionIndex = state.segments.findIndex(s => {
                 const sameSpeaker = s.speaker_id === segment.speaker_id
-                const timeClose = Math.abs((s.timestamp_inicio || 0) - (segment.timestamp_inicio || 0)) < 1.0
-                return sameText && sameSpeaker && timeClose
+                
+                // Caso 1: Mismo timestamp de inicio (update)
+                const startTimeClose = Math.abs((s.timestamp_inicio || 0) - (segment.timestamp_inicio || 0)) < 0.5
+                
+                // Caso 2: El nuevo segmento contiene el texto del anterior (consolidación)
+                const isConsolidation = sameSpeaker && segment.texto_ia.includes(s.texto_ia)
+                
+                // Caso 3: El anterior es subconjunto del nuevo
+                const isExtension = sameSpeaker && (startTimeClose || isConsolidation)
+                
+                return isExtension
             })
 
-            if (isDuplicate) {
-                console.log('Duplicate segment ignored:', segment.texto_ia.substring(0, 50))
-                // Solo limpiar provisional sin agregar
-                return {
-                    provisionalText: null,
-                    provisionalSpeaker: null,
+            let newSegments: Segmento[]
+
+            if (extensionIndex !== -1) {
+                // Es una extensión/actualización/consolidación - reemplazar el segmento anterior
+                const prevSegment = state.segments[extensionIndex]
+                console.log('Consolidating segments:', 
+                    prevSegment.texto_ia.substring(0, 40), 
+                    '→', 
+                    segment.texto_ia.substring(0, 60))
+                
+                newSegments = [...state.segments]
+                newSegments[extensionIndex] = {
+                    ...newSegments[extensionIndex],
+                    texto_ia: segment.texto_ia,
+                    texto_mejorado: segment.texto_mejorado,
+                    timestamp_fin: segment.timestamp_fin,
+                    confianza: segment.confianza,
+                    palabras_json: segment.palabras_json,
                 }
+            } else {
+                // Nuevo segmento - verificar duplicación exacta
+                const isDuplicate = state.segments.some(s => {
+                    const sameText = s.texto_ia.trim() === segment.texto_ia.trim()
+                    const sameSpeaker = s.speaker_id === segment.speaker_id
+                    const timeClose = Math.abs((s.timestamp_inicio || 0) - (segment.timestamp_inicio || 0)) < 1.0
+                    return sameText && sameSpeaker && timeClose
+                })
+
+                if (isDuplicate) {
+                    console.log('Duplicate segment ignored:', segment.texto_ia.substring(0, 50))
+                    return {
+                        provisionalText: null,
+                        provisionalSpeaker: null,
+                    }
+                }
+
+                // Agregar como nuevo segmento
+                newSegments = [...state.segments, segment]
             }
 
-            const newSegments = [...state.segments, segment]
             const totalWords = newSegments.reduce(
-                (acc, s) => acc + (s.texto_editado || s.texto_ia).split(/\s+/).length,
+                (acc, s) => acc + (s.texto_editado || s.texto_mejorado || s.texto_ia).split(/\s+/).length,
                 0
             )
             return {
@@ -123,9 +162,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
                 return seg
             })
 
-            // Track this segment as edited by user
-            const newEditedIds = new Set(state.editedSegmentIds)
-            newEditedIds.add(segmentId)
+            // Track this segment as edited by user (avoid duplicates)
+            const newEditedIds = state.editedSegmentIds.includes(segmentId)
+                ? state.editedSegmentIds
+                : [...state.editedSegmentIds, segmentId]
 
             const totalWords = newSegments.reduce(
                 (acc, s) => acc + (s.texto_editado || s.texto_ia).split(/\s+/).length,
@@ -206,7 +246,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
             currentAudioTime: 0,
             activeSegmentId: null,
             isSeeking: false,
-            editedSegmentIds: new Set<string>(),
+            editedSegmentIds: [],
             bookmarks: [],
         }),
 }))

@@ -154,98 +154,106 @@ export default function PanelHablantes({
     }
 
     return (
-        <div className="p-4 space-y-3">
+        <div className="p-4 space-y-4">
             <h3
-                className="text-xs font-semibold uppercase tracking-wider mb-3"
+                className="text-[10px] font-bold uppercase tracking-widest mb-4 flex items-center justify-between"
                 style={{ color: 'var(--text-muted)' }}
             >
-                Hablantes <span style={{ color: 'var(--accent-primary)' }}>({hablantes.length})</span>
+                Registro de Hablantes <span className="px-2 py-0.5 bg-accent-soft text-accent-gold border border-accent-gold/20">{hablantes.length}</span>
             </h3>
 
             {hablantes.length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    Los hablantes aparecerán aquí cuando Deepgram los detecte.
-                </p>
+                <div className="p-6 text-center border border-dashed border-border-default rounded-[1px]">
+                    <p className="text-[11px] font-medium leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                        Esperando detección de locutores por el motor Novum Nova-3...
+                    </p>
+                </div>
             ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                     {hablantes.map((h) => (
                         <div
                             key={h.id}
-                            className="rounded-xl p-3 transition-all"
+                            className="p-4 transition-all relative overflow-hidden"
                             style={{
                                 background: 'var(--bg-surface)',
                                 border: editando === h.id
                                     ? `1px solid ${h.color}`
                                     : '1px solid var(--border-subtle)',
+                                borderRadius: '1px'
                             }}
                         >
-                            {/* Encabezado: color dot + speaker_id */}
-                            <div className="flex items-center gap-2 mb-2">
+                            {/* Accent line */}
+                            <div className="absolute top-0 left-0 w-[3px] h-full" style={{ background: h.color }} />
+
+                            {/* Encabezado: speaker_id + auto tag */}
+                            <div className="flex items-center justify-between mb-3 pl-1">
                                 <span
-                                    className="w-3 h-3 rounded-full shrink-0"
-                                    style={{ background: h.color }}
-                                />
-                                <span
-                                    className="text-xs font-mono font-medium"
+                                    className="text-[11px] font-mono font-bold tracking-tighter"
                                     style={{ color: 'var(--text-primary)' }}
                                 >
-                                    {h.speaker_id}
+                                    ID: {h.speaker_id}
                                 </span>
                                 {h.auto_detectado && (
                                     <span
-                                        className="text-[10px] px-1.5 py-0.5 rounded"
+                                        className="text-[9px] font-bold uppercase tracking-tighter px-1.5 py-0.5"
                                         style={{
-                                            background: 'rgba(212, 168, 83, 0.1)',
+                                            background: 'var(--accent-gold-soft)',
                                             color: 'var(--accent-gold)',
                                         }}
                                     >
-                                        auto
+                                        AUTO
                                     </span>
                                 )}
                             </div>
 
                             {/* Selector de rol */}
-                            <select
-                                value={h.rol}
-                                onChange={(e) => actualizarRol(h.id, e.target.value)}
-                                onFocus={() => setEditando(h.id)}
-                                onBlur={() => setEditando(null)}
-                                disabled={cargando}
-                                className="w-full px-2 py-1.5 rounded-lg text-xs outline-none mb-2"
-                                style={{
-                                    background: 'var(--bg-primary)',
-                                    border: '1px solid var(--border-default)',
-                                    color: 'var(--text-primary)',
-                                }}
-                            >
-                                {SPEAKER_ROLES.map((rol) => (
-                                    <option key={rol.id} value={rol.rol.toLowerCase().replace(/ /g, '_')}>
-                                        {rol.rol}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="space-y-1 mb-3 pl-1">
+                                <label className="block text-[9px] font-bold uppercase tracking-widest opacity-50">Rol Judicial</label>
+                                <select
+                                    value={h.rol}
+                                    onChange={(e) => actualizarRol(h.id, e.target.value)}
+                                    onFocus={() => setEditando(h.id)}
+                                    onBlur={() => setEditando(null)}
+                                    disabled={cargando}
+                                    className="w-full px-2 py-2 text-[11px] font-bold uppercase tracking-wide outline-none transition-colors border border-border-default focus:border-accent-gold"
+                                    style={{
+                                        background: 'var(--bg-primary)',
+                                        color: 'var(--text-primary)',
+                                    }}
+                                >
+                                    {SPEAKER_ROLES.map((rol) => (
+                                        <option key={rol.id} value={rol.rol.toLowerCase().replace(/ /g, '_')}>
+                                            {rol.rol.toUpperCase()}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
                             {/* Nombre (editable) */}
-                            <input
-                                type="text"
-                                value={h.nombre || ''}
-                                onChange={(e) => actualizarNombre(h.id, e.target.value)}
-                                placeholder="Nombre del participante..."
-                                className="w-full px-2 py-1 rounded text-xs outline-none"
-                                style={{
-                                    background: 'transparent',
-                                    color: 'var(--text-secondary)',
-                                    borderBottom: '1px solid var(--border-subtle)',
-                                }}
-                            />
+                            <div className="space-y-1 pl-1">
+                                <label className="block text-[9px] font-bold uppercase tracking-widest opacity-50">Identidad</label>
+                                <input
+                                    type="text"
+                                    value={h.nombre || ''}
+                                    onChange={(e) => actualizarNombre(h.id, e.target.value)}
+                                    placeholder="Nombre completo..."
+                                    className="w-full px-2 py-2 text-[11px] font-medium outline-none border-b border-border-subtle focus:border-accent-gold"
+                                    style={{
+                                        background: 'transparent',
+                                        color: 'var(--text-secondary)',
+                                    }}
+                                />
+                            </div>
 
-                            {/* Etiqueta que aparece en Canvas */}
-                            <p
-                                className="text-[10px] mt-1.5 font-semibold uppercase"
-                                style={{ color: h.color }}
-                            >
-                                {h.etiqueta}
-                            </p>
+                            {/* Etiqueta final */}
+                            <div className="mt-3 pt-2 border-t border-border-subtle/30 flex justify-end">
+                                <p
+                                    className="text-[9px] font-black uppercase tracking-[0.2em]"
+                                    style={{ color: h.color }}
+                                >
+                                    {h.etiqueta}
+                                </p>
+                            </div>
                         </div>
                     ))}
                 </div>

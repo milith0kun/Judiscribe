@@ -65,11 +65,17 @@ export interface AudienciaCreate {
 }
 
 // ── Segmento ──────────────────────────────────────────
+export interface WordAlternative {
+    word: string
+    confidence: number
+}
+
 export interface WordTimestamp {
     word: string
     start: number
     end: number
     confidence: number
+    alternatives?: WordAlternative[]
 }
 
 export interface Segmento {
@@ -78,6 +84,7 @@ export interface Segmento {
     speaker_id: string
     texto_ia: string
     texto_editado: string | null
+    texto_mejorado?: string | null  // Texto mejorado por Claude en tiempo real
     timestamp_inicio: number
     timestamp_fin: number
     confianza: number
@@ -94,6 +101,9 @@ export interface TranscriptMessage {
     is_final: boolean
     speaker: string
     text: string
+    texto_mejorado?: string  // Texto mejorado por Claude
+    is_question?: boolean  // Si es una pregunta
+    enhancement_confidence?: number  // Confianza del mejoramiento
     confidence: number
     start: number
     end: number

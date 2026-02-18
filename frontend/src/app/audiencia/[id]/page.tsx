@@ -192,30 +192,30 @@ export default function PaginaTranscripcion() {
         <div className="h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
             {/* ── Header ─────────────────────────────────── */}
             <header
-                className="flex items-center justify-between px-6 py-3 shrink-0"
+                className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 shrink-0"
                 style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)' }}
             >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
                     <button
                         onClick={() => router.push('/')}
-                        className="text-xs px-2.5 py-1.5 rounded-lg transition-colors hover:brightness-110"
+                        className="text-[10px] sm:text-xs px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg transition-colors hover:brightness-110 shrink-0"
                         style={{ color: 'var(--text-muted)', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
                     >
-                        ← Volver
+                        ← <span className="hidden sm:inline">Volver</span>
                     </button>
-                    <div>
-                        <h1 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                    <div className="overflow-hidden">
+                        <h1 className="text-xs sm:text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>
                             {audiencia.expediente}
                         </h1>
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                            {audiencia.tipo_audiencia} — {audiencia.juzgado}
+                        <p className="text-[10px] sm:text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                            {audiencia.tipo_audiencia} <span className="hidden sm:inline">— {audiencia.juzgado}</span>
                         </p>
                     </div>
                 </div>
 
                 {/* Connection status pill */}
                 <div
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
+                    className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs shrink-0"
                     style={{
                         background:
                             connectionStatus === 'connected' ? 'rgba(34, 197, 94, 0.1)'
@@ -228,7 +228,7 @@ export default function PaginaTranscripcion() {
                     }}
                 >
                     <span
-                        className="w-2 h-2 rounded-full"
+                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full"
                         style={{
                             background:
                                 connectionStatus === 'connected' ? '#4ADE80'
@@ -236,33 +236,40 @@ export default function PaginaTranscripcion() {
                                         : '#94A3B8',
                         }}
                     />
-                    {connectionStatus === 'connected' ? 'Conectado'
-                        : connectionStatus === 'reconnecting' ? 'Reconectando...'
-                            : 'Desconectado'}
+                    <span className="hidden sm:inline">
+                        {connectionStatus === 'connected' ? 'Conectado'
+                            : connectionStatus === 'reconnecting' ? 'Reconectando...'
+                                : 'Desconectado'}
+                    </span>
+                    <span className="sm:hidden uppercase font-bold">
+                        {connectionStatus === 'connected' ? 'OK'
+                            : connectionStatus === 'reconnecting' ? '...'
+                                : 'OFF'}
+                    </span>
                 </div>
             </header>
 
-            <div className="flex flex-1 overflow-hidden">
-                {/* ── Canvas (72%) ────────────────────────── */}
-                <div className="flex-1 flex flex-col" style={{ width: '72%' }}>
+            <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+                {/* ── Canvas (Main Area) ────────────────────────── */}
+                <div className="flex-1 flex flex-col min-w-0">
                     {/* Audio source selector */}
                     {mostrarSelector && !isTranscribing && (
                         <div
-                            className="px-6 py-4 flex items-center gap-4 shrink-0"
+                            className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 shrink-0"
                             style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)' }}
                         >
                             <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
                                 Fuente de audio:
                             </span>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 w-full sm:w-auto">
                                 {([
-                                    { value: 'microphone' as const, label: '🎙️ Micrófono', desc: 'Audio directo' },
-                                    { value: 'system' as const, label: '🖥️ Sistema', desc: 'Google Meet / consola' },
+                                    { value: 'microphone' as const, label: '🎙️ Mic', desc: 'Directo' },
+                                    { value: 'system' as const, label: '🖥️ Sis', desc: 'Virtual' },
                                 ]).map(src => (
                                     <button
                                         key={src.value}
                                         onClick={() => setFuenteAudio(src.value)}
-                                        className="px-4 py-2.5 rounded-xl text-xs transition-all"
+                                        className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-xs transition-all"
                                         style={{
                                             background: fuenteAudio === src.value ? 'var(--accent-gold-soft)' : 'var(--bg-surface)',
                                             border: `1px solid ${fuenteAudio === src.value ? 'rgba(212, 168, 83, 0.4)' : 'var(--border-default)'}`,
@@ -270,20 +277,19 @@ export default function PaginaTranscripcion() {
                                         }}
                                     >
                                         <span className="block font-medium">{src.label}</span>
-                                        <span className="block mt-0.5 opacity-60">{src.desc}</span>
                                     </button>
                                 ))}
                             </div>
                             <button
                                 onClick={iniciarTranscripcion}
-                                className="ml-auto px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-110"
+                                className="w-full sm:w-auto sm:ml-auto px-6 py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-110"
                                 style={{
                                     background: 'linear-gradient(135deg, var(--accent-gold), #C49640)',
                                     color: 'var(--bg-primary)',
                                     boxShadow: '0 4px 15px rgba(212, 168, 83, 0.25)',
                                 }}
                             >
-                                ▶ Iniciar Transcripción
+                                Iniciar Transcripción
                             </button>
                         </div>
                     )}
@@ -291,47 +297,50 @@ export default function PaginaTranscripcion() {
                     {/* Recording controls */}
                     {isTranscribing && (
                         <div
-                            className="px-6 py-3 flex items-center gap-4 shrink-0"
+                            className="px-4 sm:px-6 py-3 flex items-center justify-between gap-4 shrink-0"
                             style={{ borderBottom: '1px solid var(--border-subtle)', background: 'var(--bg-secondary)' }}
                         >
                             <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full animate-pulse" style={{ background: 'var(--danger)' }} />
+                                <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse" style={{ background: 'var(--danger)' }} />
                                 <span className="text-xs font-medium" style={{ color: 'var(--danger)' }}>
                                     Grabando...
                                 </span>
                             </div>
                             <button
                                 onClick={detenerTranscripcion}
-                                className="ml-auto px-5 py-2 rounded-xl text-xs font-semibold transition-all"
+                                className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold transition-all"
                                 style={{
                                     background: 'rgba(230, 57, 70, 0.15)',
                                     color: 'var(--danger)',
                                     border: '1px solid rgba(230, 57, 70, 0.3)',
                                 }}
                             >
-                                ⏹ Detener
+                                Detener
                             </button>
                         </div>
                     )}
 
                     {/* Canvas TipTap */}
-                    <TranscriptionCanvas
-                        ref={canvasRef}
-                        soloLectura={isTranscribing}
-                        hablantes={hablantesData}
-                        onSegmentoEditado={handleSegmentoEditado}
-                        onSeekAudio={handleSeekAudio}
-                    />
+                    <div className="flex-1 overflow-hidden relative">
+                        <TranscriptionCanvas
+                            ref={canvasRef}
+                            soloLectura={isTranscribing}
+                            hablantes={hablantesData}
+                            onSegmentoEditado={handleSegmentoEditado}
+                            onSeekAudio={handleSeekAudio}
+                        />
+                    </div>
 
-                    {/* Status bar */}
-                    <BarraEstado />
+                    {/* Status bar - Hidden or simplified on mobile */}
+                    <div className="hidden sm:block">
+                        <BarraEstado />
+                    </div>
                 </div>
 
-                {/* ── Sidebar (28%) ──────────────────────────── */}
+                {/* ── Sidebar (Right on desktop, Bottom/Toggle on mobile) ──────────────────────────── */}
                 <aside
-                    className="shrink-0 flex flex-col overflow-hidden"
+                    className="lg:w-[320px] xl:w-[380px] shrink-0 flex flex-col overflow-hidden border-t lg:border-t-0 lg:border-l h-[300px] lg:h-full"
                     style={{
-                        width: '28%',
                         borderLeft: '1px solid var(--border-subtle)',
                         background: 'var(--bg-secondary)',
                     }}
@@ -346,7 +355,7 @@ export default function PaginaTranscripcion() {
                             <button
                                 key={tab.id}
                                 onClick={() => setPestanaSidebar(tab.id)}
-                                className="flex-1 py-2.5 text-[10px] font-medium uppercase tracking-wider transition-colors"
+                                className="flex-1 py-2.5 text-[9px] sm:text-[10px] font-medium uppercase tracking-wider transition-colors"
                                 style={{
                                     color: pestanaSidebar === tab.id ? 'var(--accent-gold)' : 'var(--text-muted)',
                                     borderBottom: pestanaSidebar === tab.id ? '2px solid var(--accent-gold)' : '2px solid transparent',

@@ -58,40 +58,40 @@ export default function DashboardPage() {
         <AuthGuard>
             <div className="min-h-screen" style={{ background: 'var(--bg-primary)' }}>
                 {/* Header */}
-                <header className="px-8 py-6 flex items-center justify-between"
+                <header className="px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4"
                     style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                     <div className="flex items-center gap-4">
-                        <div className="logo-monogram">J</div>
+                        <div className="logo-monogram shrink-0">J</div>
                         <div>
-                            <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+                            <h1 className="text-lg sm:text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
                                 JudiScribe
                             </h1>
-                            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sistema de Transcripción Judicial</p>
+                            <p className="text-xs sm:text-sm" style={{ color: 'var(--text-muted)' }}>Sistema de Transcripción Judicial</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
+                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                        <div className="text-right hidden sm:block">
                             <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{user?.nombre}</p>
                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{user?.rol}</p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 w-full sm:w-auto">
                             <button
                                 onClick={() => router.push('/audiencia/demo')}
-                                className="btn-primary">
+                                className="btn-primary flex-1 sm:flex-initial">
                                 Iniciar
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="btn-secondary">
+                                className="btn-secondary flex-1 sm:flex-initial">
                                 Salir
                             </button>
                         </div>
                     </div>
                 </header>
 
-            <main className="max-w-6xl mx-auto px-8 py-10">
+            <main className="max-w-6xl mx-auto px-4 sm:px-8 py-6 sm:py-10">
                 {/* Stats - Números grandes minimalistas */}
-                <div className="grid grid-cols-3 gap-6 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-10">
                     {[
                         { label: 'Hoy', value: audienciasHoy },
                         { label: 'Pendientes', value: pendientes },
@@ -106,7 +106,7 @@ export default function DashboardPage() {
 
                 {/* Actions */}
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Audiencias</h2>
+                    <h2 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Audiencias</h2>
                     <button
                         onClick={() => router.push('/audiencia/nueva')}
                         className="btn-secondary">
@@ -123,7 +123,7 @@ export default function DashboardPage() {
                         ))}
                     </div>
                 ) : audiencias.length === 0 ? (
-                    <div className="rounded-2xl p-16 text-center"
+                    <div className="rounded-2xl p-8 sm:p-16 text-center"
                         style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
                         {/* Líneas minimalistas como empty state */}
                         <div className="empty-state-lines mb-6">
@@ -140,9 +140,9 @@ export default function DashboardPage() {
                         </button>
                     </div>
                 ) : (
-                    <div className="rounded-2xl overflow-hidden"
+                    <div className="rounded-2xl overflow-x-auto overflow-y-hidden"
                         style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-                        <table className="w-full text-sm">
+                        <table className="w-full text-sm min-w-[600px]">
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                                     {['Expediente', 'Tipo', 'Juzgado', 'Fecha', 'Estado', ''].map((h) => (

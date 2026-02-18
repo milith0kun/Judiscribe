@@ -100,24 +100,23 @@ export default function AtajosFrases({
     }, [habilitado, frases, insertarFrase])
 
     return (
-        <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
+        <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between mb-4">
                 <h3
-                    className="text-xs font-semibold uppercase tracking-wider"
+                    className="text-[10px] font-bold uppercase tracking-widest"
                     style={{ color: 'var(--accent-gold)' }}
                 >
-                    ⌨️ Frases rápidas
+                    Cláusulas Rápidas
                 </h3>
                 <button
                     onClick={() => setMostrarPanel(!mostrarPanel)}
-                    className="text-[10px] px-2 py-0.5 rounded"
+                    className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 border border-border-subtle hover:border-accent-gold transition-colors"
                     style={{
                         background: 'var(--bg-surface)',
                         color: 'var(--text-muted)',
-                        border: '1px solid var(--border-subtle)',
                     }}
                 >
-                    {mostrarPanel ? 'Ocultar' : 'Mostrar'}
+                    {mostrarPanel ? 'Contraer' : 'Expandir'}
                 </button>
             </div>
 
@@ -127,40 +126,40 @@ export default function AtajosFrases({
                         <button
                             key={frase.id}
                             onClick={() => insertarFrase(frase)}
-                            className="w-full text-left px-3 py-2 rounded-lg transition-all hover:brightness-110 group"
+                            className="w-full text-left px-3 py-3 rounded-[1px] transition-all group border-b border-border-subtle/20 hover:bg-white"
                             style={{
                                 background:
                                     ultimaInsertada === frase.codigo
-                                        ? 'rgba(34, 197, 94, 0.1)'
-                                        : 'var(--bg-surface)',
-                                border: `1px solid ${ultimaInsertada === frase.codigo
-                                    ? 'rgba(34, 197, 94, 0.3)'
+                                        ? 'rgba(27, 67, 50, 0.05)'
+                                        : 'var(--bg-primary)',
+                                borderLeft: `2px solid ${ultimaInsertada === frase.codigo
+                                    ? 'var(--success)'
                                     : 'transparent'
                                     }`,
                             }}
                         >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-3 mb-1">
                                 <kbd
-                                    className="px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0"
+                                    className="px-1.5 py-0.5 text-[9px] font-bold shrink-0 border border-border-subtle"
                                     style={{
-                                        background: 'var(--bg-primary)',
-                                        color: 'var(--text-secondary)',
+                                        background: 'var(--bg-surface)',
+                                        color: 'var(--text-primary)',
                                     }}
                                 >
-                                    Ctrl+{frase.numero_atajo}
+                                    CTRL+{frase.numero_atajo}
                                 </kbd>
                                 <span
-                                    className="text-[10px] font-medium shrink-0"
+                                    className="text-[10px] font-black uppercase tracking-widest shrink-0"
                                     style={{ color: 'var(--accent-gold)' }}
                                 >
                                     {frase.codigo}
                                 </span>
                             </div>
                             <p
-                                className="text-[10px] mt-1 leading-tight line-clamp-2"
-                                style={{ color: 'var(--text-muted)' }}
+                                className="text-[11px] font-medium leading-relaxed italic line-clamp-2"
+                                style={{ color: 'var(--text-secondary)' }}
                             >
-                                {frase.texto}
+                                &ldquo;{frase.texto}&rdquo;
                             </p>
                         </button>
                     ))}
@@ -168,22 +167,21 @@ export default function AtajosFrases({
             )}
 
             {!mostrarPanel && (
-                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                    Usa Ctrl+[0-9] para insertar frases rápidas.
+                <p className="text-[10px] font-medium leading-relaxed opacity-60" style={{ color: 'var(--text-muted)' }}>
+                    Utilice la combinación de teclas <span className="font-bold">Ctrl + [0-9]</span> para la inserción automatizada de protocolos judiciales.
                 </p>
             )}
 
             {/* Feedback de inserción */}
             {ultimaInsertada && (
                 <div
-                    className="mt-2 px-3 py-1.5 rounded-lg text-[10px] animate-fade-in"
+                    className="mt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-widest animate-fade-in border-l-2 border-success"
                     style={{
-                        background: 'rgba(34, 197, 94, 0.1)',
-                        color: '#4ADE80',
-                        border: '1px solid rgba(34, 197, 94, 0.2)',
+                        background: 'rgba(27, 67, 50, 0.05)',
+                        color: 'var(--success)',
                     }}
                 >
-                    ✓ {ultimaInsertada} insertada
+                    Cláusula {ultimaInsertada} Insertada
                 </div>
             )}
         </div>

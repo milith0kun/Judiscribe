@@ -144,42 +144,41 @@ export default function PanelMarcadores({
     }
 
     return (
-        <div className="p-4">
-            <div className="flex items-center justify-between mb-3">
+        <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between mb-4">
                 <h3
-                    className="text-xs font-semibold uppercase tracking-wider"
+                    className="text-[10px] font-bold uppercase tracking-widest"
                     style={{ color: 'var(--text-muted)' }}
                 >
-                    Marcadores <span style={{ color: 'var(--accent-primary)' }}>({marcadores.length})</span>
+                    Marcas de Revisión <span className="text-accent-gold">[{marcadores.length}]</span>
                 </h3>
                 <button
                     onClick={() => setMostrarFormulario(!mostrarFormulario)}
-                    className="btn-secondary text-xs"
+                    className="btn-secondary px-3 py-1.5"
                 >
-                    <span style={{ fontSize: '14px', fontWeight: 300 }}>+</span>
-                    Agregar
+                    Añadir Marca
                 </button>
             </div>
 
             {/* Formulario */}
             {mostrarFormulario && (
                 <div
-                    className="rounded-xl p-3 mb-3 space-y-3"
+                    className="p-4 mb-4 space-y-4 rounded-[1px]"
                     style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}
                 >
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                         {Object.entries(TIPOS_MARCADOR).map(([tipo, config]) => (
                             <button
                                 key={tipo}
                                 onClick={() => setTipoSeleccionado(tipo)}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                                className="flex items-center gap-2 px-3 py-2 rounded-[1px] text-[10px] font-bold uppercase tracking-wide transition-all"
                                 style={{
-                                    background: tipoSeleccionado === tipo ? `${config.color}15` : 'var(--bg-surface)',
-                                    color: tipoSeleccionado === tipo ? config.color : 'var(--text-muted)',
-                                    border: `1px solid ${tipoSeleccionado === tipo ? `${config.color}40` : 'var(--border-subtle)'}`,
+                                    background: tipoSeleccionado === tipo ? config.color : 'var(--bg-surface)',
+                                    color: tipoSeleccionado === tipo ? 'var(--bg-primary)' : 'var(--text-muted)',
+                                    border: `1px solid ${tipoSeleccionado === tipo ? config.color : 'var(--border-subtle)'}`,
                                 }}
                             >
-                                <MarkerShape forma={config.forma} color={tipoSeleccionado === tipo ? config.color : 'var(--text-muted)'} size={8} />
+                                <MarkerShape forma={config.forma} color={tipoSeleccionado === tipo ? 'var(--bg-primary)' : 'var(--text-muted)'} size={8} />
                                 {config.etiqueta}
                             </button>
                         ))}
@@ -188,60 +187,59 @@ export default function PanelMarcadores({
                         type="text"
                         value={nuevaNota}
                         onChange={(e) => setNuevaNota(e.target.value)}
-                        placeholder="Nota opcional..."
-                        className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                        placeholder="Descripción del incidente..."
+                        className="w-full px-3 py-2 text-[11px] font-medium outline-none border border-border-default focus:border-accent-gold"
                         style={{
                             background: 'var(--bg-primary)',
                             color: 'var(--text-primary)',
-                            border: '1px solid var(--border-default)',
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && crearMarcadorConNota()}
                     />
                     <button
                         onClick={crearMarcadorConNota}
-                        className="btn-primary w-full text-sm"
+                        className="btn-primary w-full py-2.5 text-[10px]"
                     >
-                        Crear marcador en {formatearTiempo(elapsedSeconds)}
+                        Registrar Marca @ {formatearTiempo(elapsedSeconds)}
                     </button>
                 </div>
             )}
 
             {/* Lista de marcadores */}
             {marcadores.length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    Presiona <kbd className="px-1.5 py-0.5 rounded text-xs font-mono"
-                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)' }}>Ctrl+M</kbd>{' '}
-                    para crear un marcador rápido.
-                </p>
+                <div className="p-6 text-center border border-dashed border-border-default opacity-60">
+                    <p className="text-[10px] leading-relaxed italic" style={{ color: 'var(--text-muted)' }}>
+                        Combine <kbd className="px-1.5 py-0.5 font-bold border border-border-subtle">Ctrl + M</kbd> para fijar un punto de revisión rápida en el tiempo actual.
+                    </p>
+                </div>
             ) : (
-                <div className="space-y-2">
+                <div className="space-y-1">
                     {marcadores.map((m) => {
                         const config = TIPOS_MARCADOR[m.tipo as keyof typeof TIPOS_MARCADOR] || TIPOS_MARCADOR.revision
                         return (
                             <div
                                 key={m.id}
-                                className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all group"
-                                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}
+                                className="flex items-center gap-4 px-4 py-3 rounded-[1px] cursor-pointer transition-all group border-b border-border-subtle/20 hover:bg-white"
+                                style={{ background: 'var(--bg-primary)' }}
                                 onClick={() => onSeekAudio?.(m.timestamp)}
                             >
                                 <MarkerShape forma={config.forma} color={config.color} size={10} />
                                 <span
-                                    className="text-sm font-mono"
+                                    className="text-[11px] font-bold font-mono tracking-tighter"
                                     style={{ color: config.color }}
                                 >
-                                    {formatearTiempo(m.timestamp)}
+                                    [{formatearTiempo(m.timestamp)}]
                                 </span>
                                 {m.nota && (
-                                    <span className="text-sm truncate flex-1" style={{ color: 'var(--text-secondary)' }}>
+                                    <span className="text-[11px] font-medium truncate flex-1 italic" style={{ color: 'var(--text-secondary)' }}>
                                         {m.nota}
                                     </span>
                                 )}
                                 <button
                                     onClick={(e) => { e.stopPropagation(); eliminarMarcador(m.id) }}
-                                    className="opacity-0 group-hover:opacity-100 w-5 h-5 flex items-center justify-center rounded transition-all"
-                                    style={{ color: 'var(--text-muted)', background: 'var(--bg-elevated)' }}
+                                    className="opacity-0 group-hover:opacity-100 p-1 text-[12px] font-light hover:text-danger transition-colors"
+                                    style={{ color: 'var(--text-muted)' }}
                                 >
-                                    <span style={{ fontSize: '12px' }}>×</span>
+                                    ELIMINAR
                                 </button>
                             </div>
                         )
