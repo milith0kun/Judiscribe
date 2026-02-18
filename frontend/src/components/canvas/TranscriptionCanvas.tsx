@@ -344,7 +344,7 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         const firstNewSeg = nuevos[0]
         const continueSameSpeaker = lastExistingSeg?.speaker_id === firstNewSeg?.speaker_id
 
-        let htmlParts: string[] = []
+        const htmlParts: string[] = []
 
         nuevos.forEach((seg, idx) => {
             const globalIdx = segments.indexOf(seg)
@@ -441,7 +441,7 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         // Append new provisional using ProvisionalNode
         if (provisionalText && provisionalText.trim()) {
             const { color } = getSpeakerInfo(provisionalSpeaker || 'SPEAKER_00')
-            
+
             editor.chain().focus('end').setProvisional({
                 text: provisionalText,
                 speakerId: provisionalSpeaker || 'SPEAKER_00',

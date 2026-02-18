@@ -280,7 +280,7 @@ export default function WordCorrectionPopover({
                         PALABRA:
                     </span>
                     <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        "{originalWord}"
+                        &quot;{originalWord}&quot;
                     </span>
                     <span style={{
                         fontSize: '12px',
@@ -348,7 +348,7 @@ export default function WordCorrectionPopover({
                         gap: '8px',
                     }}>
                         <span style={{ fontSize: '16px' }}>✓</span>
-                        <span>La IA confirma que "{originalWord}" es correcta en este contexto</span>
+                        <span>La IA confirma que &quot;{originalWord}&quot; es correcta en este contexto</span>
                     </div>
                 )}
 
@@ -499,7 +499,7 @@ export default function WordCorrectionPopover({
                     }}
                 >
                     <span>✓</span>
-                    <span>Aceptar "{originalWord}" como correcta</span>
+                    <span>Aceptar &quot;{originalWord}&quot; como correcta</span>
                 </button>
             </div>
 
