@@ -235,30 +235,48 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         const nuevos = segments.slice(prevSegmentCountRef.current)
         prevSegmentCountRef.current = segments.length
 
-        const html = nuevos
-            .map((seg, idx) => {
-                // Show speaker label if different from previous
-                const globalIdx = segments.indexOf(seg)
-                const prevSeg = globalIdx > 0 ? segments[globalIdx - 1] : null
-                const showLabel = !prevSeg || prevSeg.speaker_id !== seg.speaker_id
-                const { etiqueta, color } = getSpeakerInfo(seg.speaker_id)
-                const texto = seg.texto_editado || seg.texto_ia
-                const isEdited = editedSegmentIds.has(seg.id)
-                const timestamp = seg.timestamp_inicio || 0
+        // Remover texto provisional antes de agregar segmentos finales
+        const provisionalNodes = editor.view.dom.querySelectorAll('[data-provisional="true"]')
+        provisionalNodes.forEach(node => node.remove())
 
-                const classes = ['segment-clickable']
-                if (seg.confianza < 0.7) classes.push('text-low-confidence')
-                if (isEdited) classes.push('segment-edited')
+        let currentParagraph = ''
+        let currentSpeaker = ''
+        const paragraphs: string[] = []
 
-                let fragment = ''
-                if (showLabel) {
-                    fragment += `<speaker-label data-speaker-id="${seg.speaker_id}" style="display:inline-block;font-weight:700;text-transform:uppercase;font-size:0.75rem;letter-spacing:0.05em;padding:2px 8px;border-radius:4px;margin-top:0.75rem;margin-bottom:0.25rem;color:${color};background:${color}12;border-left:3px solid ${color};user-select:none;cursor:default;">${etiqueta}</speaker-label><br/>`
+        nuevos.forEach((seg, idx) => {
+            const globalIdx = segments.indexOf(seg)
+            const prevSeg = globalIdx > 0 ? segments[globalIdx - 1] : null
+            const newSpeaker = prevSeg?.speaker_id !== seg.speaker_id
+            const { etiqueta, color } = getSpeakerInfo(seg.speaker_id)
+            const texto = seg.texto_editado || seg.texto_ia
+            const isEdited = editedSegmentIds.has(seg.id)
+            const timestamp = seg.timestamp_inicio || 0
+
+            const classes = ['segment-clickable']
+            if (seg.confianza < 0.7) classes.push('text-low-confidence')
+            if (isEdited) classes.push('segment-edited')
+
+            // Si cambia el speaker, cerrar párrafo anterior y empezar uno nuevo
+            if (newSpeaker) {
+                if (currentParagraph) {
+                    paragraphs.push(`<p style="margin:0.5rem 0;line-height:1.6;">${currentParagraph}</p>`)
                 }
-                fragment += `<span class="${classes.join(' ')}" data-segment-id="${seg.id}" data-timestamp="${timestamp}" data-edited="${isEdited}" style="cursor:pointer;">${texto}</span> `
-                return fragment
-            })
-            .join('')
+                // Nueva etiqueta de speaker
+                paragraphs.push(`<div data-speaker-id="${seg.speaker_id}" style="display:inline-block;font-weight:700;text-transform:uppercase;font-size:0.75rem;letter-spacing:0.05em;padding:2px 8px;border-radius:4px;margin-top:0.75rem;margin-bottom:0.25rem;color:${color};background:${color}12;border-left:3px solid ${color};user-select:none;cursor:default;">${etiqueta}</div>`)
+                currentParagraph = ''
+                currentSpeaker = seg.speaker_id
+            }
 
+            // Agregar segmento al párrafo actual
+            currentParagraph += `<span class="${classes.join(' ')}" data-segment-id="${seg.id}" data-timestamp="${timestamp}" data-edited="${isEdited}" style="cursor:pointer;">${texto}</span> `
+        })
+
+        // Cerrar el último párrafo
+        if (currentParagraph) {
+            paragraphs.push(`<p style="margin:0.5rem 0;line-height:1.6;">${currentParagraph}</p>`)
+        }
+
+        const html = paragraphs.join('')
         editor.chain().focus('end').insertContent(html).run()
 
         // Auto-scroll to bottom
@@ -298,20 +316,13 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         if (!editor) return
 
         // Remove old provisional nodes
-        const { tr } = editor.state
-        let modified = false
-        editor.state.doc.descendants((node, pos) => {
-            if (node.attrs?.['data-provisional']) {
-                tr.delete(pos, pos + node.nodeSize)
-                modified = true
-            }
-        })
-        if (modified) editor.view.dispatch(tr)
+        const provisionalNodes = editor.view.dom.querySelectorAll('[data-provisional="true"]')
+        provisionalNodes.forEach(node => node.remove())
 
         // Append new provisional
-        if (provisionalText) {
-            const { etiqueta, color } = getSpeakerInfo(provisionalSpeaker || 'speaker_0')
-            const html = `<p data-provisional="true" style="color:${color};opacity:0.45;font-style:italic;margin:0;padding:0 0 0 11px;border-left:3px solid ${color}33;transition:opacity 0.3s;"><em>${provisionalText}</em></p>`
+        if (provisionalText && provisionalText.trim()) {
+            const { etiqueta, color } = getSpeakerInfo(provisionalSpeaker || 'SPEAKER_00')
+            const html = `<div data-provisional="true" style="color:${color};opacity:0.5;font-style:italic;margin:0.25rem 0;padding:0.25rem 0.5rem;border-left:3px solid ${color}33;background:${color}08;transition:opacity 0.2s;"><em>${provisionalText}</em></div>`
             editor.chain().focus('end').insertContent(html).run()
 
             if (autoScrollRef.current) {

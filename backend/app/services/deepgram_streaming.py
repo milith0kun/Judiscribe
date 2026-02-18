@@ -55,11 +55,12 @@ class DeepgramStreamingService:
             "sample_rate=16000",
             "channels=1",
             "interim_results=true",
-            "utterance_end_ms=2000",  # Longer for legal proceedings (pauses between statements)
+            "utterance_end_ms=3000",  # Aumentado a 3s para evitar cortes prematuros y duplicados
             "vad_events=true",
             "punctuate=true",
             "numerals=true",  # Format article numbers: "doscientos sesenta y ocho" → "268"
-            "filler_words=true",  # Detect muletillas for cleaner transcription
+            "filler_words=false",  # Desactivado para evitar fragmentación excesiva
+            "endpointing=500",  # Esperar 500ms antes de finalizar una expresión
         ]
         # Add keyterms (up to 100)
         for term in self.keyterms[:100]:

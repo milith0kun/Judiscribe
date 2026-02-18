@@ -83,6 +83,23 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
 
     addSegment: (segment) =>
         set((state) => {
+            // Deduplicar: no agregar si ya existe un segmento con el mismo texto y speaker cercano en el tiempo
+            const isDuplicate = state.segments.some(s => {
+                const sameText = s.texto_ia.trim() === segment.texto_ia.trim()
+                const sameSpeaker = s.speaker_id === segment.speaker_id
+                const timeClose = Math.abs((s.timestamp_inicio || 0) - (segment.timestamp_inicio || 0)) < 1.0
+                return sameText && sameSpeaker && timeClose
+            })
+
+            if (isDuplicate) {
+                console.log('Duplicate segment ignored:', segment.texto_ia.substring(0, 50))
+                // Solo limpiar provisional sin agregar
+                return {
+                    provisionalText: null,
+                    provisionalSpeaker: null,
+                }
+            }
+
             const newSegments = [...state.segments, segment]
             const totalWords = newSegments.reduce(
                 (acc, s) => acc + (s.texto_editado || s.texto_ia).split(/\s+/).length,
