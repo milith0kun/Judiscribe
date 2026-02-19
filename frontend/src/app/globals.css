@@ -59,41 +59,62 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Canvas styles — Word-Like Document ─────────────────── */
+/* ── Canvas styles — Word-Like A4 Document ─────────────────── */
 
-/* Page area: parchment background with centered "paper" */
+/*
+ * A4 dimensions at 96 DPI:
+ *   Width  = 210mm = 794px
+ *   Height = 297mm = 1123px
+ * Default Word margins (Normal): 25.4mm = 96px
+ */
+
+/* Page area: dark workspace with centered paper */
 .canvas-page-area {
   background: var(--bg-primary);
   flex: 1;
   overflow-y: auto;
-  padding: 32px 0;
+  padding: 40px 0;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
 }
 
-/* The "paper" itself — A4-like proportions but wider for better clerk experience */
+/* The "paper" itself — A4 proportions */
 .canvas-document {
   background: var(--bg-surface);
-  width: 100%;
-  max-width: 880px;
-  min-height: 1056px;
+  width: 794px;
+  min-height: 1123px;
   box-shadow:
-    0 4px 24px rgba(166, 130, 70, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1px;
+    0 2px 12px rgba(0, 0, 0, 0.12),
+    0 0 0 1px var(--border-subtle);
+  border-radius: 2px;
   position: relative;
   display: flex;
   flex-direction: column;
+  margin-bottom: 40px;
+  /* Visual page-break lines every 297mm (1123px) */
+  background-image:
+    repeating-linear-gradient(to bottom,
+      transparent,
+      transparent 1122px,
+      var(--border-subtle) 1122px,
+      var(--border-subtle) 1123px);
+  background-size: 100% 1123px;
+  background-position: 0 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
+  .canvas-page-area {
+    padding: 0;
+  }
+
   .canvas-document {
-    max-width: 100%;
-    min-height: auto;
+    width: 100%;
+    min-height: 100vh;
     box-shadow: none;
     border-radius: 0;
-    border: none;
+    margin-bottom: 0;
+    background-image: none;
   }
 }
 
@@ -165,25 +186,28 @@ body {
 
 .canvas-editor .ProseMirror {
   outline: none;
-  min-height: 600px;
-  padding: 40px 96px 160px;
+  min-height: 900px;
+  /* A4 minus header ≈ 900px */
+  padding: 32px 96px 96px;
+  /* Word-like margins: ~25mm sides, ~25mm bottom */
   font-family: 'Georgia', var(--font-display), serif;
-  font-size: 15px;
-  line-height: 1.85;
+  font-size: 14px;
+  line-height: 1.8;
   color: var(--text-primary);
   width: 100% !important;
   max-width: none !important;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   .canvas-editor .ProseMirror {
-    padding: 24px 24px 100px;
+    padding: 20px 20px 80px;
     min-height: 400px;
+    font-size: 13px;
   }
 }
 
 .canvas-editor .ProseMirror p {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   text-align: justify;
   text-indent: 0;
   width: 100% !important;
@@ -984,6 +1008,7 @@ body {
     opacity: 0;
     transform: translateX(-4px);
   }
+
   to {
     opacity: 0.6;
     transform: translateX(0);
@@ -1058,8 +1083,13 @@ body {
 }
 
 @keyframes suggestionSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Tooltip para Ghost Text ─────────────────────────────── */

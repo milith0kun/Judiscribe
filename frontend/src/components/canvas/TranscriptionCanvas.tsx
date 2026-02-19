@@ -400,11 +400,11 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         const html = htmlParts.join('')
         editor.chain().focus('end').insertContent(html).run()
 
-        // Auto-scroll to bottom
-        if (autoScrollRef.current) {
+        // Auto-scroll to bottom (scroll the page area, not ProseMirror)
+        if (autoScrollRef.current && containerRef.current) {
             requestAnimationFrame(() => {
-                const el = editor.view.dom
-                el.scrollTop = el.scrollHeight
+                const pageArea = containerRef.current
+                if (pageArea) pageArea.scrollTop = pageArea.scrollHeight
             })
         }
     }, [editor, segments, editedSegmentIds, getSpeakerInfo])
@@ -458,10 +458,10 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
                 color: color
             }).run()
 
-            if (autoScrollRef.current) {
+            if (autoScrollRef.current && containerRef.current) {
                 requestAnimationFrame(() => {
-                    const el = editor.view.dom
-                    el.scrollTop = el.scrollHeight
+                    const pageArea = containerRef.current
+                    if (pageArea) pageArea.scrollTop = pageArea.scrollHeight
                 })
             }
         }
@@ -470,7 +470,7 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
     /* ── Smart auto-scroll control ──────────────────── */
 
     useEffect(() => {
-        const el = editor?.view.dom
+        const el = containerRef.current
         if (!el) return
 
         const onScroll = () => {
@@ -487,8 +487,9 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
         const handler = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.key === 'j') {
                 e.preventDefault()
-                if (editor) {
-                    editor.view.dom.scrollTop = editor.view.dom.scrollHeight
+                const pageArea = containerRef.current
+                if (pageArea) {
+                    pageArea.scrollTop = pageArea.scrollHeight
                     autoScrollRef.current = true
                 }
             }
@@ -574,8 +575,9 @@ const TranscriptionCanvas = forwardRef<TranscriptionCanvasHandle, CanvasProps>((
                 {!autoScrollRef.current && segments.length > 3 && (
                     <button
                         onClick={() => {
-                            if (editor) {
-                                editor.view.dom.scrollTop = editor.view.dom.scrollHeight
+                            const pageArea = containerRef.current
+                            if (pageArea) {
+                                pageArea.scrollTop = pageArea.scrollHeight
                                 autoScrollRef.current = true
                             }
                         }}
