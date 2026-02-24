@@ -2,6 +2,7 @@
 WebSocket handler para transcripción en tiempo real.
 Recibe audio del cliente, lo reenvía a Deepgram, y retorna texto transcrito.
 Graba el audio en WAV en paralelo.
+Multi-usuario: exige token en query ?token=JWT y que el usuario pueda acceder a la audiencia.
 """
 import asyncio
 import base64
@@ -9,6 +10,7 @@ import json
 import logging
 import os
 import uuid
+import urllib.parse
 import wave
 from datetime import datetime
 
@@ -20,6 +22,8 @@ from app.config import settings
 from app.database import async_session
 from app.models.audiencia import Audiencia
 from app.models.segmento import Segmento
+from app.models.usuario import Usuario
+from app.services.auth_service import decode_token, get_user_by_id
 from app.services.deepgram_streaming import DeepgramStreamingService
 from app.services.real_time_enhancement import get_enhancement_service
 from app.services.text_processing import detect_question
@@ -30,18 +34,52 @@ logger = logging.getLogger(__name__)
 active_sessions: dict[str, dict] = {}
 
 
+def _puede_acceder_audiencia(audiencia: Audiencia, usuario: Usuario) -> bool:
+    if usuario.rol in ("admin", "supervisor"):
+        return True
+    return audiencia.created_by == usuario.id
+
+
 async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
     """
     WebSocket endpoint for real-time transcription.
-
-    Flow:
-    1. Client sends audio chunks (base64 PCM 16kHz mono)
-    2. Backend forwards to Deepgram Nova-3
-    3. Deepgram returns transcript
-    4. Backend sends transcript to client
-    5. Audio is recorded to WAV file in parallel
+    Query param: token (JWT). Si falta o es inválido, o el usuario no puede acceder a la audiencia, se cierra.
     """
     await websocket.accept()
+
+    query_string = websocket.scope.get("query_string", b"").decode()
+    params = urllib.parse.parse_qs(query_string)
+    token_list = params.get("token", [])
+    token = token_list[0] if token_list else None
+
+    if not token:
+        await websocket.close(code=4401, reason="Token requerido")
+        return
+
+    token_data = decode_token(token)
+    if token_data is None or token_data.user_id is None:
+        await websocket.close(code=4401, reason="Token inválido o expirado")
+        return
+
+    async with async_session() as db:
+        user = await get_user_by_id(db, token_data.user_id)
+        if user is None or not user.activo:
+            await websocket.close(code=4401, reason="Usuario no encontrado o inactivo")
+            return
+        try:
+            aid = uuid.UUID(audiencia_id)
+        except ValueError:
+            await websocket.close(code=4404, reason="Audiencia no encontrada")
+            return
+        result = await db.execute(select(Audiencia).where(Audiencia.id == aid))
+        audiencia = result.scalar_one_or_none()
+        if audiencia is None:
+            await websocket.close(code=4404, reason="Audiencia no encontrada")
+            return
+        if not _puede_acceder_audiencia(audiencia, user):
+            await websocket.close(code=4403, reason="Sin permiso para esta audiencia")
+            return
+
     logger.info(f"WebSocket connected for audiencia: {audiencia_id}")
 
     # Audio recording setup
@@ -437,23 +475,27 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
         await dg_service.close()
         wav_file.close()
 
-        # Update audiencia with audio duration
-        async with async_session() as db:
-            result = await db.execute(
-                select(Audiencia).where(Audiencia.id == uuid.UUID(audiencia_id))
-            )
-            audiencia = result.scalar_one_or_none()
-            if audiencia:
-                # Calculate audio duration from WAV file
-                try:
-                    with wave.open(audio_path, "rb") as wf:
-                        frames = wf.getnframes()
-                        rate = wf.getframerate()
-                        audiencia.audio_duration_seconds = frames / float(rate)
-                except Exception:
-                    pass
-                audiencia.estado = "transcrita"
-                await db.commit()
+        # Guardar sesión: duración del audio y estado "transcrita"
+        try:
+            aid = uuid.UUID(audiencia_id)
+            async with async_session() as db:
+                result = await db.execute(
+                    select(Audiencia).where(Audiencia.id == aid)
+                )
+                audiencia = result.scalar_one_or_none()
+                if audiencia:
+                    try:
+                        with wave.open(audio_path, "rb") as wf:
+                            frames = wf.getnframes()
+                            rate = wf.getframerate()
+                            audiencia.audio_duration_seconds = frames / float(rate)
+                    except Exception:
+                        pass
+                    audiencia.estado = "transcrita"
+                    await db.commit()
+                    logger.info(f"Sesión guardada: audiencia {audiencia_id} → transcrita")
+        except (ValueError, Exception) as e:
+            logger.warning(f"No se pudo actualizar audiencia al cerrar sesión: {e}")
 
         # Remove from active sessions
         active_sessions.pop(audiencia_id, None)

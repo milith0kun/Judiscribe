@@ -31,6 +31,20 @@ export default function DashboardPage() {
         fetchAudiencias()
     }, [])
 
+    // Refrescar lista al volver a la pestaña (p. ej. después de grabar)
+    useEffect(() => {
+        const onFocus = () => fetchAudiencias()
+        const onVisibility = () => {
+            if (document.visibilityState === 'visible') onFocus()
+        }
+        window.addEventListener('focus', onFocus)
+        document.addEventListener('visibilitychange', onVisibility)
+        return () => {
+            window.removeEventListener('focus', onFocus)
+            document.removeEventListener('visibilitychange', onVisibility)
+        }
+    }, [])
+
     const fetchAudiencias = async () => {
         try {
             const { data } = await api.get('/api/audiencias')
@@ -104,15 +118,25 @@ export default function DashboardPage() {
                     ))}
                 </div>
 
-                {/* Actions */}
+                {/* Sesiones de grabación */}
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>Audiencias</h2>
-                    <button
-                        onClick={() => router.push('/audiencia/nueva')}
-                        className="btn-secondary">
-                        <span style={{ fontSize: '16px', fontWeight: 300 }}>+</span>
-                        Nueva
-                    </button>
+                    <h2 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        Sesiones de grabación
+                    </h2>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => fetchAudiencias()}
+                            className="btn-secondary text-xs sm:text-sm">
+                            Actualizar
+                        </button>
+                        <button
+                            onClick={() => router.push('/audiencia/nueva')}
+                            className="btn-secondary">
+                            <span style={{ fontSize: '16px', fontWeight: 300 }}>+</span>
+                            Nueva sesión
+                        </button>
+                    </div>
                 </div>
 
                 {/* Table */}
@@ -131,12 +155,12 @@ export default function DashboardPage() {
                             <span></span>
                             <span></span>
                         </div>
-                        <p className="text-base font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>No hay audiencias registradas</p>
-                        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>Crea una nueva audiencia o inicia una transcripción rápida</p>
+                        <p className="text-base font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Aún no tienes sesiones de grabación</p>
+                        <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>Crea una nueva sesión para grabar y transcribir. Varias personas pueden usar el sistema; cada una verá sus propias grabaciones.</p>
                         <button
-                            onClick={() => router.push('/audiencia/demo')}
+                            onClick={() => router.push('/audiencia/nueva')}
                             className="btn-primary">
-                            Iniciar transcripción
+                            Nueva sesión de grabación
                         </button>
                     </div>
                 ) : (
@@ -145,7 +169,7 @@ export default function DashboardPage() {
                         <table className="w-full text-sm min-w-[600px]">
                             <thead>
                                 <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                                    {['Expediente', 'Tipo', 'Juzgado', 'Fecha', 'Estado', ''].map((h) => (
+                                    {['Expediente', 'Tipo', 'Juzgado', 'Fecha', 'Creada', 'Estado', ''].map((h) => (
                                         <th key={h} className="text-left px-5 py-3.5 text-xs font-medium uppercase tracking-wider"
                                             style={{ color: 'var(--text-muted)' }}>
                                             {h}
@@ -156,6 +180,9 @@ export default function DashboardPage() {
                             <tbody>
                                 {audiencias.map((a) => {
                                     const estado = ESTADO_COLORS[a.estado] || ESTADO_COLORS.pendiente
+                                    const creada = a.created_at
+                                        ? new Date(a.created_at).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })
+                                        : '—'
                                     return (
                                         <tr key={a.id}
                                             className="cursor-pointer transition-colors hover:brightness-110"
@@ -171,6 +198,9 @@ export default function DashboardPage() {
                                                 {a.juzgado}
                                             </td>
                                             <td className="px-5 py-4" style={{ color: 'var(--text-secondary)' }}>{a.fecha}</td>
+                                            <td className="px-5 py-4 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                                                {creada}
+                                            </td>
                                             <td className="px-5 py-4">
                                                 <span className="px-2.5 py-1 rounded-full text-xs font-medium"
                                                     style={{ background: estado.bg, color: estado.text }}>

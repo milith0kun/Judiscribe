@@ -29,7 +29,12 @@ export function useDeepgramSocket(audienciaId: string) {
     const connect = useCallback(() => {
         if (wsRef.current?.readyState === WebSocket.OPEN) return
 
-        const url = `${WS_BASE}/ws/transcripcion/${audienciaId}`
+        const token =
+            typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+        const path = `/ws/transcripcion/${audienciaId}`
+        const url = token
+            ? `${WS_BASE}${path}?token=${encodeURIComponent(token)}`
+            : `${WS_BASE}${path}`
         const ws = new WebSocket(url)
         wsRef.current = ws
 

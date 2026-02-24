@@ -1,19 +1,22 @@
 """
 CRUD de audiencias.
 POST, GET (list), GET (detail), PUT.
-Sin autenticación por ahora — se agregará después.
+Multi-usuario: cada audiencia tiene created_by; transcriptor ve solo las suyas;
+admin y supervisor ven todas.
 """
 import uuid
 from datetime import date
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user
 from app.database import get_db
 from app.models.audiencia import Audiencia
 from app.models.segmento import Segmento
+from app.models.usuario import Usuario
 from app.schemas.audiencia import (
     AudienciaCreate,
     AudienciaListResponse,
@@ -25,14 +28,22 @@ from app.schemas.segmento import SegmentoResponse
 router = APIRouter(prefix="/api/audiencias", tags=["audiencias"])
 
 
+def _puede_acceder_audiencia(audiencia: Audiencia, usuario: Usuario) -> bool:
+    """Transcriptor solo ve las suyas; admin y supervisor ven todas."""
+    if usuario.rol in ("admin", "supervisor"):
+        return True
+    return audiencia.created_by == usuario.id
+
+
 @router.post("", response_model=AudienciaResponse, status_code=status.HTTP_201_CREATED)
 async def crear_audiencia(
     data: AudienciaCreate,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Usuario, Depends(get_current_user)],
 ):
     audiencia = Audiencia(
         **data.model_dump(),
-        created_by=uuid.UUID("00000000-0000-0000-0000-000000000001"),  # default user
+        created_by=current_user.id,
     )
     db.add(audiencia)
     await db.flush()
@@ -42,7 +53,8 @@ async def crear_audiencia(
 
 @router.get("", response_model=AudienciaListResponse)
 async def listar_audiencias(
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Usuario, Depends(get_current_user)],
     fecha_desde: Optional[date] = Query(None),
     fecha_hasta: Optional[date] = Query(None),
     juzgado: Optional[str] = Query(None),
@@ -53,6 +65,9 @@ async def listar_audiencias(
     per_page: int = Query(20, ge=1, le=100),
 ):
     query = select(Audiencia)
+    # Transcriptor solo ve sus audiencias; admin y supervisor ven todas
+    if current_user.rol not in ("admin", "supervisor"):
+        query = query.where(Audiencia.created_by == current_user.id)
 
     if fecha_desde:
         query = query.where(Audiencia.fecha >= fecha_desde)
@@ -87,13 +102,16 @@ async def listar_audiencias(
 @router.get("/{audiencia_id}", response_model=AudienciaResponse)
 async def obtener_audiencia(
     audiencia_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Usuario, Depends(get_current_user)],
 ):
     result = await db.execute(
         select(Audiencia).where(Audiencia.id == audiencia_id)
     )
     audiencia = result.scalar_one_or_none()
     if audiencia is None:
+        raise HTTPException(status_code=404, detail="Audiencia no encontrada")
+    if not _puede_acceder_audiencia(audiencia, current_user):
         raise HTTPException(status_code=404, detail="Audiencia no encontrada")
     return audiencia
 
@@ -102,13 +120,16 @@ async def obtener_audiencia(
 async def actualizar_audiencia(
     audiencia_id: uuid.UUID,
     data: AudienciaUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Usuario, Depends(get_current_user)],
 ):
     result = await db.execute(
         select(Audiencia).where(Audiencia.id == audiencia_id)
     )
     audiencia = result.scalar_one_or_none()
     if audiencia is None:
+        raise HTTPException(status_code=404, detail="Audiencia no encontrada")
+    if not _puede_acceder_audiencia(audiencia, current_user):
         raise HTTPException(status_code=404, detail="Audiencia no encontrada")
 
     update_data = data.model_dump(exclude_unset=True)
@@ -125,8 +146,17 @@ async def actualizar_audiencia(
 @router.get("/{audiencia_id}/segmentos", response_model=list[SegmentoResponse])
 async def obtener_segmentos(
     audiencia_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Usuario, Depends(get_current_user)],
 ):
+    result = await db.execute(
+        select(Audiencia).where(Audiencia.id == audiencia_id)
+    )
+    audiencia = result.scalar_one_or_none()
+    if audiencia is None:
+        raise HTTPException(status_code=404, detail="Audiencia no encontrada")
+    if not _puede_acceder_audiencia(audiencia, current_user):
+        raise HTTPException(status_code=404, detail="Audiencia no encontrada")
     result = await db.execute(
         select(Segmento)
         .where(Segmento.audiencia_id == audiencia_id)
@@ -143,9 +173,18 @@ async def editar_segmento(
     audiencia_id: uuid.UUID,
     segmento_id: uuid.UUID,
     data: dict,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Usuario, Depends(get_current_user)],
 ):
     """Guardar texto editado por el digitador."""
+    result = await db.execute(
+        select(Audiencia).where(Audiencia.id == audiencia_id)
+    )
+    audiencia = result.scalar_one_or_none()
+    if audiencia is None:
+        raise HTTPException(status_code=404, detail="Audiencia no encontrada")
+    if not _puede_acceder_audiencia(audiencia, current_user):
+        raise HTTPException(status_code=404, detail="Audiencia no encontrada")
     result = await db.execute(
         select(Segmento).where(
             Segmento.id == segmento_id,
@@ -170,7 +209,8 @@ async def editar_segmento(
 @router.get("/{audiencia_id}/audio")
 async def obtener_audio(
     audiencia_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Usuario, Depends(get_current_user)],
 ):
     """Servir el archivo WAV grabado de la audiencia."""
     import os
@@ -181,6 +221,8 @@ async def obtener_audio(
     )
     audiencia = result.scalar_one_or_none()
     if audiencia is None:
+        raise HTTPException(status_code=404, detail="Audiencia no encontrada")
+    if not _puede_acceder_audiencia(audiencia, current_user):
         raise HTTPException(status_code=404, detail="Audiencia no encontrada")
 
     if not audiencia.audio_path or not os.path.exists(audiencia.audio_path):
