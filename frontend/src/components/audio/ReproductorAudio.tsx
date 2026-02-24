@@ -41,6 +41,7 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
     const [duracion, setDuracion] = useState(0)
     const [velocidad, setVelocidad] = useState(1)
     const [cargado, setCargado] = useState(false)
+    const [errorCarga, setErrorCarga] = useState<string | null>(null)
 
     // Exponer métodos al componente padre
     useImperativeHandle(ref, () => ({
@@ -68,6 +69,7 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
         let ws: any = null
 
         const inicializar = async () => {
+            setErrorCarga(null)
             const token =
                 typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
             const headers: HeadersInit = {}
@@ -78,10 +80,16 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
                 const res = await fetch(audioUrl, { headers })
                 if (!res.ok) throw new Error('Audio no disponible')
                 const blob = await res.blob()
+                // Blob vacío o solo cabecera WAV (44 bytes) no se puede decodificar
+                if (blob.size <= 44) {
+                    setErrorCarga('La grabación está vacía o aún no hay audio.')
+                    return
+                }
                 const blobUrl = URL.createObjectURL(blob)
                 blobUrlRef.current = blobUrl
                 urlToLoad = blobUrl
             } catch {
+                setErrorCarga('No se pudo cargar el audio.')
                 setCargado(false)
                 return
             }
@@ -104,6 +112,12 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
             ws.on('ready', () => {
                 setDuracion(ws.getDuration())
                 setCargado(true)
+                setErrorCarga(null)
+            })
+
+            ws.on('error', () => {
+                setErrorCarga('No se pudo decodificar el audio.')
+                setCargado(false)
             })
 
             ws.on('audioprocess', () => {
@@ -166,35 +180,40 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
         )
     }
 
+    if (errorCarga) {
         return (
-
             <div className="px-3 sm:px-4 py-3 sm:py-4">
-
                 <h3
-
                     className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-2 sm:mb-3"
-
                     style={{ color: 'var(--text-muted)' }}
-
                 >
-
                     Audio
-
                 </h3>
-
-    
-
-                {/* Onda de audio */}
-
                 <div
+                    className="rounded-lg px-4 py-3 text-sm"
+                    style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}
+                >
+                    {errorCarga}
+                </div>
+            </div>
+        )
+    }
 
-                    ref={contenedorRef}
+    return (
+        <div className="px-3 sm:px-4 py-3 sm:py-4">
+            <h3
+                className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider mb-2 sm:mb-3"
+                style={{ color: 'var(--text-muted)' }}
+            >
+                Audio
+            </h3>
 
-                    className="rounded-lg overflow-hidden mb-3 sm:mb-4"
-
-                    style={{ background: 'var(--bg-secondary)' }}
-
-                />
+            {/* Onda de audio */}
+            <div
+                ref={contenedorRef}
+                className="rounded-lg overflow-hidden mb-3 sm:mb-4"
+                style={{ background: 'var(--bg-secondary)' }}
+            />
 
     
 

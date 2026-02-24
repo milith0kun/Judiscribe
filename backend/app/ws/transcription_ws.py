@@ -44,6 +44,9 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
     """
     WebSocket endpoint for real-time transcription.
     Query param: token (JWT). Si falta o es inválido, o el usuario no puede acceder a la audiencia, se cierra.
+
+    En producción (Traefik/nginx): configurar timeout largo para esta ruta (ej. 3600s)
+    para que grabaciones largas no se corten por timeout del proxy.
     """
     await websocket.accept()
 
@@ -443,26 +446,34 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
         # Main receive loop — get audio from client, forward to Deepgram
         while True:
             message = await websocket.receive_text()
-            data = json.loads(message)
+            try:
+                data = json.loads(message)
+            except json.JSONDecodeError as e:
+                logger.warning(f"WebSocket message no es JSON válido: {e}")
+                continue
 
-            if data.get("type") == "audio_chunk":
-                # Decode base64 audio
-                audio_bytes = base64.b64decode(data["data"])
+            msg_type = data.get("type")
+            if msg_type == "audio_chunk":
+                try:
+                    payload = data.get("data")
+                    if not payload:
+                        logger.warning("audio_chunk sin campo 'data'")
+                        continue
+                    audio_bytes = base64.b64decode(payload)
+                    wav_file.writeframes(audio_bytes)
+                    await dg_service.send_audio(audio_bytes)
+                except Exception as e:
+                    logger.warning(f"Error procesando audio_chunk: {e}")
+                    continue
 
-                # Write to WAV file
-                wav_file.writeframes(audio_bytes)
-
-                # Forward to Deepgram
-                await dg_service.send_audio(audio_bytes)
-
-            elif data.get("type") == "stop":
+            elif msg_type == "stop":
                 logger.info(f"Transcription stopped for audiencia: {audiencia_id}")
                 break
 
-    except WebSocketDisconnect:
-        logger.info(f"WebSocket disconnected for audiencia: {audiencia_id}")
+    except WebSocketDisconnect as e:
+        logger.info(f"WebSocket disconnected for audiencia: {audiencia_id} (code={getattr(e, 'code', '?')})")
     except Exception as e:
-        logger.error(f"WebSocket error for audiencia {audiencia_id}: {e}")
+        logger.error(f"WebSocket error for audiencia {audiencia_id}: {e}", exc_info=True)
         try:
             await websocket.send_json({
                 "type": "error",

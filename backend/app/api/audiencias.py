@@ -228,6 +228,14 @@ async def obtener_audio(
     if not audiencia.audio_path or not os.path.exists(audiencia.audio_path):
         raise HTTPException(status_code=404, detail="Audio no disponible")
 
+    # WAV con solo cabecera (44 bytes) o vacío no se puede decodificar en el navegador
+    size = os.path.getsize(audiencia.audio_path)
+    if size <= 44:
+        raise HTTPException(
+            status_code=404,
+            detail="Audio no disponible (grabación vacía o sin datos)",
+        )
+
     return FileResponse(
         audiencia.audio_path,
         media_type="audio/wav",
