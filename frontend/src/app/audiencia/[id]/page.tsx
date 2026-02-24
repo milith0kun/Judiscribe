@@ -57,6 +57,7 @@ export default function PaginaTranscripcion() {
         segments,
         isTranscribing,
         connectionStatus,
+        provisionalSpeaker,
         setTranscribing,
         setElapsedSeconds,
         setCurrentAudioTime,
@@ -420,6 +421,8 @@ export default function PaginaTranscripcion() {
                                 audienciaId={audienciaId}
                                 speakersDetectados={speakersDetectados}
                                 onHablanteActualizado={handleHablanteActualizado}
+                                onHablantesCargados={setHablantesData}
+                                hablandoAhora={provisionalSpeaker}
                             />
                         )}
                         {pestanaSidebar === 'marcadores' && (

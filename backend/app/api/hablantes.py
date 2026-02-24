@@ -37,9 +37,17 @@ ROLES_CONFIG = {
     "otro":              {"etiqueta": "OTRO:",                                             "color": "#94A3B8"},
 }
 
+# Colores distintos para voces auto-detectadas (diarización), por orden
+COLORES_POR_ORDEN = [
+    "#2563EB", "#059669", "#DC2626", "#D97706", "#7C3AED",
+    "#0E7490", "#64748B", "#94A3B8", "#EA580C", "#65A30D",
+]
+
 
 @router.get("/roles")
-async def listar_roles():
+async def listar_roles(
+    audiencia_id: uuid.UUID,
+):
     """Retorna la lista de roles judiciales disponibles con etiquetas y colores."""
     return [
         {"rol": rol, "etiqueta": config["etiqueta"], "color": config["color"]}
@@ -82,16 +90,25 @@ async def crear_hablante(
 
     # Aplicar colores y etiquetas por defecto según el rol
     config_rol = ROLES_CONFIG.get(datos.rol, ROLES_CONFIG["otro"])
+    # Para rol "otro" (voces detectadas por diarización), color distinto por orden
+    if datos.rol == "otro" and not datos.color:
+        color = COLORES_POR_ORDEN[datos.orden % len(COLORES_POR_ORDEN)]
+    else:
+        color = datos.color or config_rol["color"]
+    etiqueta = datos.etiqueta or config_rol["etiqueta"]
+    # Si es auto-detectado (solo speaker_id), etiqueta inicial con el ID para distinguir voces
+    if not datos.etiqueta and datos.speaker_id:
+        etiqueta = f"{datos.speaker_id.upper()}:"
 
     hablante = Hablante(
         audiencia_id=audiencia_id,
         speaker_id=datos.speaker_id,
         rol=datos.rol,
-        etiqueta=datos.etiqueta or config_rol["etiqueta"],
+        etiqueta=etiqueta,
         nombre=datos.nombre,
-        color=datos.color or config_rol["color"],
+        color=color,
         orden=datos.orden,
-        auto_detectado=False,
+        auto_detectado=True,  # Creado al detectar nueva voz en transcripción
     )
     db.add(hablante)
     await db.commit()

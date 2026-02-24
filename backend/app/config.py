@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # ── Audio ────────────────────────────────────────────
+    # Ruta donde se guardan los WAV de cada audiencia. En producción montar un volumen
+    # persistente (ej. Docker volume o bind mount) para no perder audios al reiniciar.
     AUDIO_STORAGE_PATH: str = "/app/audio_files"
     AUDIO_ENCRYPTION_KEY: str = ""
     AUDIO_RETENTION_DAYS: int = 30

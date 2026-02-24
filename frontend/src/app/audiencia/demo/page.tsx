@@ -46,6 +46,7 @@ export default function DemoCanvasPage() {
         isTranscribing,
         connectionStatus,
         elapsedSeconds,
+        provisionalSpeaker,
         setTranscribing,
         setElapsedSeconds,
         setCurrentAudioTime,
@@ -318,6 +319,8 @@ export default function DemoCanvasPage() {
                             auto_detectado: true,
                         }))}
                         onHablanteActualizado={() => { }}
+                        onHablantesCargados={() => { }}
+                        hablandoAhora={provisionalSpeaker}
                     />
 
                     <div className="h-px bg-white/10 mx-4" />

@@ -475,7 +475,7 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
         await dg_service.close()
         wav_file.close()
 
-        # Guardar sesión: duración del audio y estado "transcrita"
+        # Guardar sesión: audio_path, duración y estado "transcrita"
         try:
             aid = uuid.UUID(audiencia_id)
             async with async_session() as db:
@@ -484,16 +484,18 @@ async def transcription_websocket(websocket: WebSocket, audiencia_id: str):
                 )
                 audiencia = result.scalar_one_or_none()
                 if audiencia:
-                    try:
-                        with wave.open(audio_path, "rb") as wf:
-                            frames = wf.getnframes()
-                            rate = wf.getframerate()
-                            audiencia.audio_duration_seconds = frames / float(rate)
-                    except Exception:
-                        pass
+                    if os.path.exists(audio_path):
+                        audiencia.audio_path = audio_path
+                        try:
+                            with wave.open(audio_path, "rb") as wf:
+                                frames = wf.getnframes()
+                                rate = wf.getframerate()
+                                audiencia.audio_duration_seconds = frames / float(rate)
+                        except Exception:
+                            pass
                     audiencia.estado = "transcrita"
                     await db.commit()
-                    logger.info(f"Sesión guardada: audiencia {audiencia_id} → transcrita")
+                    logger.info(f"Sesión guardada: audiencia {audiencia_id} → transcrita (audio: {audio_path})")
         except (ValueError, Exception) as e:
             logger.warning(f"No se pudo actualizar audiencia al cerrar sesión: {e}")
 

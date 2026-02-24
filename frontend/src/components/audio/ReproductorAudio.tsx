@@ -60,13 +60,32 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
         },
     }), [duracion])
 
+    const blobUrlRef = useRef<string | null>(null)
+
     useEffect(() => {
         if (!contenedorRef.current || !audioUrl) return
 
         let ws: any = null
 
-        // Importar wavesurfer de forma dinámica (solo cliente)
         const inicializar = async () => {
+            const token =
+                typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+            const headers: HeadersInit = {}
+            if (token) headers['Authorization'] = `Bearer ${token}`
+
+            let urlToLoad = audioUrl
+            try {
+                const res = await fetch(audioUrl, { headers })
+                if (!res.ok) throw new Error('Audio no disponible')
+                const blob = await res.blob()
+                const blobUrl = URL.createObjectURL(blob)
+                blobUrlRef.current = blobUrl
+                urlToLoad = blobUrl
+            } catch {
+                setCargado(false)
+                return
+            }
+
             const WaveSurfer = (await import('wavesurfer.js')).default
 
             ws = WaveSurfer.create({
@@ -98,7 +117,7 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
             ws.on('pause', () => setReproduciendo(false))
             ws.on('finish', () => setReproduciendo(false))
 
-            ws.load(audioUrl)
+            ws.load(urlToLoad)
             wavesurferRef.current = ws
         }
 
@@ -107,6 +126,10 @@ const ReproductorAudio = forwardRef<ReproductorAudioHandle, ReproductorAudioProp
         return () => {
             ws?.destroy()
             wavesurferRef.current = null
+            if (blobUrlRef.current) {
+                URL.revokeObjectURL(blobUrlRef.current)
+                blobUrlRef.current = null
+            }
         }
     }, [audioUrl])
 

@@ -28,6 +28,10 @@ interface PanelHablantesProps {
     speakersDetectados: string[]
     /** Callback cuando se actualiza un hablante */
     onHablanteActualizado?: (hablante: Hablante) => void
+    /** Callback cuando se carga la lista completa */
+    onHablantesCargados?: (hablantes: Hablante[]) => void
+    /** ID del hablante que está hablando actualmente (provisionalSpeaker) */
+    hablandoAhora?: string | null
     /** Si true, no llama a la API y gestiona todo localmente */
     modoDemo?: boolean
     /** Hablantes pre-cargados para modo demo */
@@ -38,6 +42,8 @@ export default function PanelHablantes({
     audienciaId,
     speakersDetectados,
     onHablanteActualizado,
+    onHablantesCargados,
+    hablandoAhora = null,
     modoDemo = false,
     hablantesIniciales = [],
 }: PanelHablantesProps) {
@@ -58,10 +64,12 @@ export default function PanelHablantes({
             // Merge con los actuales para no perder ediciones locales
             setHablantes(prev => {
                 const map = new Map(prev.map(h => [h.speaker_id, h]))
-                return hablantesIniciales.map(h => map.get(h.speaker_id) || h)
+                const updated = hablantesIniciales.map(h => map.get(h.speaker_id) || h)
+                onHablantesCargados?.(updated)
+                return updated
             })
         }
-    }, [hablantesIniciales, modoDemo])
+    }, [hablantesIniciales, modoDemo, onHablantesCargados])
 
     // Auto-crear hablantes cuando se detectan nuevos speakers
     useEffect(() => {
@@ -74,10 +82,10 @@ export default function PanelHablantes({
                 const nuevosHablantes: Hablante[] = nuevos.map((id, idx) => ({
                     id: `demo-${Date.now()}-${idx}`,
                     speaker_id: id,
-                    rol: 'participante',
-                    etiqueta: id,
+                    rol: 'otro',
+                    etiqueta: `${id}:`,
                     nombre: '',
-                    color: '#999999', // Color default, idealmente rotar
+                    color: '#94A3B8',
                     orden: hablantes.length + idx,
                     auto_detectado: true
                 }))
@@ -85,11 +93,11 @@ export default function PanelHablantes({
             } else {
                 // Modo API: POST
                 Promise.all(
-                    nuevos.map((speakerId) =>
+                    nuevos.map((speakerId, idx) =>
                         api.post(`/api/audiencias/${audienciaId}/hablantes`, {
                             speaker_id: speakerId,
                             rol: 'otro',
-                            orden: hablantes.length + nuevos.indexOf(speakerId),
+                            orden: hablantes.length + idx,
                         })
                     )
                 ).then(() => cargarHablantes())
@@ -101,6 +109,7 @@ export default function PanelHablantes({
         try {
             const { data } = await api.get(`/api/audiencias/${audienciaId}/hablantes`)
             setHablantes(data)
+            onHablantesCargados?.(data)
         } catch (err) {
             console.error('Error cargando hablantes:', err)
         }
@@ -185,14 +194,24 @@ export default function PanelHablantes({
                             {/* Accent line */}
                             <div className="absolute top-0 left-0 w-[3px] h-full" style={{ background: h.color }} />
 
-                            {/* Encabezado: speaker_id + auto tag */}
+                            {/* Encabezado: speaker_id + auto tag + hablando ahora */}
                             <div className="flex items-center justify-between mb-3 pl-1">
-                                <span
-                                    className="text-[11px] font-mono font-bold tracking-tighter"
-                                    style={{ color: 'var(--text-primary)' }}
-                                >
-                                    ID: {h.speaker_id}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className="text-[11px] font-mono font-bold tracking-tighter"
+                                        style={{ color: 'var(--text-primary)' }}
+                                    >
+                                        ID: {h.speaker_id}
+                                    </span>
+                                    {hablandoAhora === h.speaker_id && (
+                                        <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-sm" style={{ background: 'rgba(219, 39, 119, 0.1)' }}>
+                                            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#DB2777' }} />
+                                            <span className="text-[8px] font-bold uppercase tracking-widest text-pink-500">
+                                                Al aire
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                                 {h.auto_detectado && (
                                     <span
                                         className="text-[9px] font-bold uppercase tracking-tighter px-1.5 py-0.5"

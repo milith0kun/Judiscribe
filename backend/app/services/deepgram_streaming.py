@@ -2,13 +2,13 @@
 Servicio de streaming con Deepgram Nova-3.
 Mantiene una conexión WebSocket persistente con Deepgram por cada audiencia activa.
 
-NOTA: Este servicio solo maneja la conexión con Deepgram.
-El buffering semántico y mejoramiento con Claude se hace en transcription_ws.py
-para evitar duplicación de lógica.
+Diarización: diarize=true identifica distintas voces (SPEAKER_00, SPEAKER_01, ...).
+Nova-3 soporta diarización en streaming; cada palabra trae speaker (int).
 """
 import asyncio
 import json
 import logging
+from collections import Counter
 from typing import Callable, Optional
 
 import websockets
@@ -72,6 +72,19 @@ class DeepgramStreamingService:
             params.append(f"keyterms={term}")
 
         return f"{base}?{'&'.join(params)}"
+
+    @staticmethod
+    def _speaker_dominante(words: list) -> str:
+        """
+        Obtiene el speaker más frecuente en la lista de palabras (diarización).
+        Deepgram devuelve speaker (int) por palabra; así evitamos etiquetar mal
+        un segmento cuando hay mezcla de voces en un mismo resultado.
+        """
+        if not words:
+            return "SPEAKER_00"
+        speakers = [w.get("speaker", 0) for w in words]
+        dominante = Counter(speakers).most_common(1)[0][0]
+        return f"SPEAKER_{dominante:02d}"
 
     async def connect(self) -> None:
         """Establish connection to Deepgram."""
@@ -141,10 +154,9 @@ class DeepgramStreamingService:
         is_final = data.get("is_final", False)
         words = best.get("words", [])
 
-        # Speaker detection from words
-        speaker = "SPEAKER_00"
-        if words:
-            speaker = f"SPEAKER_{words[0].get('speaker', 0):02d}"
+        # Diarización: speaker por palabra (Deepgram devuelve speaker: 0, 1, 2...)
+        # Usamos el speaker dominante en el segmento por si hay palabras de distintos hablantes
+        speaker = self._speaker_dominante(words)
 
         # Build word list with alternatives for low-confidence words
         processed_words = []
