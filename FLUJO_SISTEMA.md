@@ -2,6 +2,12 @@
 
 Este documento describe el flujo completo del sistema, desde el login hasta la generación del acta.
 
+## Estado de implementación respecto al informe
+
+El alcance oficial del proyecto está en **informe.tex** (3 Niveles, 15 Sprints). **Nivel 1 (MVP):** en gran parte implementado — transcripción en vivo, guardado de audio y segmentos, Canvas, hablantes, marcadores, diccionario jurídico, frases estándar, predicción/análisis contextual; pendiente en Nivel 1 la generación de acta (endpoint POST generar-acta y tarea `generate_acta` actualmente lanzan NotImplementedError). **Nivel 2 y Nivel 3:** pendientes (batch, acta editable, aprobación, exportación DOCX/PDF, corpus, etc.). Para el detalle por sprint y endpoints implementados vs planeados, ver la sección **Estado de implementación según informe.tex** en el Readme.md.
+
+---
+
 ## 1. Inicio de Sesión (Login)
 
 ### Frontend
@@ -259,6 +265,8 @@ Tabla frases_estandar:
 
 ## 10. Generación de Acta
 
+**Pendiente de implementación completa (Nivel 1 Sprint 5 / Nivel 2).** La tarea Celery `generate_acta` existe pero lanza `NotImplementedError`; no hay endpoint POST generar-acta ni rutas de acta en el router actual. El flujo siguiente describe el comportamiento objetivo.
+
 ### Frontend
 ```
 Usuario click "Generar Acta"
@@ -295,6 +303,8 @@ generate_acta.py
 ```
 
 ## 11. Procesamiento Batch (Post-Audiencia)
+
+**Pendiente (Nivel 2, Sprint 7).** La tarea `batch_process_audio` existe pero lanza `NotImplementedError`. El flujo siguiente describe el comportamiento objetivo.
 
 ### Trigger
 ```
@@ -442,10 +452,14 @@ websocket:{connection_id} → Estado de conexiones WS
 - `PUT /api/frases/{id}` - Actualizar frase
 - `DELETE /api/frases/{id}` - Eliminar frase
 
-### Generación
+### Generación (pendiente — Nivel 2)
 - `POST /api/audiencias/{id}/generar-acta` - Generar acta
 - `GET /api/audiencias/{id}/acta/status` - Estado de generación
 - `GET /api/audiencias/{id}/acta/download` - Descargar acta
+
+### Procesamiento batch (pendiente — Nivel 2)
+- `POST /api/audiencias/{id}/procesar-audio` - Subir audio pregrabado para batch
+- `POST /api/audiencias/{id}/segmentos/batch-update` - Aceptar/rechazar propuestas de mejora
 
 ## 15. Configuración en Dokploy
 

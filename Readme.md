@@ -28,6 +28,37 @@ Hay tres roles de usuario:
 
 ---
 
+## Estado de implementación según informe.tex
+
+El alcance oficial del proyecto está definido en **informe.tex** (3 Niveles, 15 Sprints, 5 funcionalidades por sprint). Esta sección indica qué está implementado en el código y qué falta.
+
+### Nivel 1 (MVP — Sprints 1–5)
+
+| Sprint | Descripción (informe.tex) | Estado |
+|--------|----------------------------|--------|
+| **1** | Infraestructura, BD, estructura documento, WebSocket Deepgram con diarización | **Implementado** — FastAPI, PostgreSQL, modelos (Audiencia, Segmento, Usuario, Hablante, Marcador, FraseEstandar), auth JWT, CRUD audiencias con estructura completa, WebSocket `/ws/transcripcion/{id}` con Deepgram y diarización. Opcional: templates_audiencia (no expuesto en API). |
+| **2** | Guardado correcto de audios y transcripciones | **Implementado** — Captura de audio en frontend, grabación WAV en transcription_ws, persistencia de segmentos desde el WebSocket, consolidación por speaker, envío al cliente. GET/PUT segmentos y GET audio en API audiencias. |
+| **3** | Mejoramiento en tiempo real + diccionario jurídico | **Implementado** — RealTimeEnhancementService, LegalDictionary, legal_keyterms, integración en WebSocket; sugerencias al cliente (SuggestionPopover, WordCorrectionPopover). |
+| **4** | Canvas TipTap, panel hablantes, reproductor, marcadores, sugerencias | **Implementado** — TranscriptionCanvas, PanelHablantes, ReproductorAudio, PanelMarcadores, SuggestionPopover, WordCorrectionPopover; extensiones TipTap (SpeakerNode, BookmarkNode, LowConfidenceMark, etc.); APIs hablantes y marcadores. |
+| **5** | Frases estándar, predicción, barra estado, persistencia ediciones, generar acta (borrador), Docker | **Parcial** — Frases estándar (modelo + API frases + AtajosFrases), predicción/análisis (API prediction/analysis), BarraEstado, PUT segmentos con editado_por_usuario. **Pendiente:** endpoint POST generar-acta, modelo/API de actas, tarea generate_acta (actualmente lanza NotImplementedError). Docker/despliegue según proyecto. |
+
+### Nivel 2 (Sprints 6–10)
+
+**Pendiente.** Incluye: Sprint 6 (reglas no añadir palabras, autocompletado solo corrección 1:1), Sprint 7 (procesamiento batch — tarea `batch_process_audio` existe pero lanza NotImplementedError), Sprint 8 (revisión de propuestas y merge), Sprint 9 (editor de acta y aprobación), Sprint 10 (exportación DOCX/PDF y estabilización).
+
+### Nivel 3 (Sprints 11–15)
+
+**Pendiente.** Incluye: mejoras UI/UX, corpus y aprendizaje del sistema, cierre, capacitación y soporte post-lanzamiento.
+
+### Endpoints: implementados vs planeados
+
+- **Implementados:** Auth (login, refresh, me; register si existe). Audiencias: CRUD completo. Segmentos: GET y PUT bajo `/api/audiencias/{id}/segmentos`. Audio: GET `/api/audiencias/{id}/audio`. Hablantes: GET/PUT. Marcadores: POST, GET, DELETE. Frases: CRUD (router frases). Análisis y predicción: según router (analysis, prediction). WebSocket: `/ws/transcripcion/{audiencia_id}`.
+- **No implementados (planeados en informe / sección 6):** POST `/api/audiencias/{id}/generar-acta`, GET/PUT acta, POST acta/aprobar, POST exportar/docx, POST exportar/pdf, upload/start/stop para batch, batch-update de segmentos. Las rutas de actas y exportación no están registradas en el router actual; el modelo/tabla `actas` y los servicios acta_generator/document_export pueden no estar expuestos.
+
+La **sección 6 (API REST)** de este Readme describe el conjunto **objetivo** de endpoints; la lista anterior indica cuáles existen hoy en el código.
+
+---
+
 ## 3. Stack tecnológico — decisiones fijas
 
 Estas decisiones no se discuten. Están tomadas y justificadas en la especificación original.
@@ -101,11 +132,11 @@ judiscribe/
 │       ├── api/                     ← REST endpoints
 │       │   ├── router.py
 │       │   ├── audiencias.py
-│       │   ├── segmentos.py
-│       │   ├── actas.py
+│       │   ├── segmentos.py         ← (segmentos bajo audiencias en código actual)
+│       │   ├── actas.py             ← (pendiente informe — Nivel 2)
 │       │   ├── marcadores.py
 │       │   ├── hablantes.py
-│       │   ├── export.py
+│       │   ├── export.py             ← (pendiente informe — Nivel 2)
 │       │   └── auth.py
 │       ├── ws/                      ← WebSocket handlers
 │       │   ├── transcription_ws.py  ← audio in → texto out en tiempo real
@@ -145,8 +176,8 @@ judiscribe/
 │       │       ├── nueva/page.tsx
 │       │       └── [id]/
 │       │           ├── page.tsx     ← vista Canvas principal
-│       │           ├── acta/page.tsx
-│       │           └── revision/page.tsx
+│       │           ├── acta/page.tsx     ← (pendiente informe — Nivel 2)
+│       │           └── revision/page.tsx  ← (pendiente informe — Nivel 2)
 │       ├── components/
 │       │   ├── canvas/
 │       │   │   ├── TranscriptionCanvas.tsx
@@ -1037,37 +1068,45 @@ El panel de administración (solo accesible para el rol admin) incluye:
 
 ## 31. Orden de implementación por sprints
 
-### Sprint 1 — Semanas 1 y 2: Base del sistema + transcripción streaming
+Alineado con **informe.tex**: Nivel 1 = Sprints 1–5 (MVP), Nivel 2 = Sprints 6–10, Nivel 3 = Sprints 11–15. Cada sprint tiene 5 funcionalidades concretas en el informe.
 
-El objetivo es que al finalizar, el digitador pueda abrir el navegador, crear una audiencia, hablar por el micrófono y ver texto aparecer en el Canvas en tiempo real.
+### Sprint 1 — Infraestructura, BD y estructura del documento [Implementado]
 
-Funcionalidades a implementar: configuración completa de Docker Compose con los seis servicios, modelo de datos inicial con migraciones Alembic (audiencias, segmentos, usuarios), autenticación JWT completa, CRUD de audiencias, hook de captura de audio en el navegador con MediaRecorder API, WebSocket gateway en backend, servicio Deepgram streaming con conexión persistente, pipeline de retorno del texto al Canvas, Canvas básico en modo visualización (solo append, sin edición), persistencia de segmentos en PostgreSQL, grabación paralela del audio completo en WAV.
+Objetivo: backend operativo, autenticación, CRUD audiencias con estructura completa del documento, WebSocket con Deepgram y detección multi-rol (diarización).
 
-Criterio de aceptación: latencia menor a 3 segundos, diarización básica visible, segmentos guardados en BD.
+Funcionalidades: FastAPI con estructura modular, PostgreSQL 16 + SQLAlchemy async, modelos Audiencia/Segmento/Usuario/Hablante y migraciones Alembic; auth JWT (login, refresh) y roles; frontend Next.js base (Login, layout, AuthProvider, AuthGuard); API REST de audiencias con todos los campos (expediente, juzgado, tipo_audiencia, instancia, fecha, sala, etc.); integración WebSocket con Deepgram Nova-3 (diarize=true, keyterms, smart_format). Opcional: templates_audiencia.
 
-### Sprint 2 — Semanas 3 y 4: Canvas editable + hablantes + audio vinculado
+### Sprint 2 — Guardado de audios y transcripciones [Implementado]
 
-El objetivo es que el digitador pueda editar el texto, ver hablantes con colores y roles, y reproducir cualquier segmento de audio.
+Objetivo: audios y transcripciones guardados correctamente (WAV por audiencia, segmentos en BD).
 
-Funcionalidades: Canvas en modo edición completa con TipTap, regla de no-sobreescritura (editado_por_usuario), texto provisional vs. confirmado con ProvisionalMark, etiquetas de hablante con SpeakerNode y colores, panel de hablantes con dropdown de roles, propagación de roles a todo el Canvas, reproductor de audio con wavesurfer.js, click-to-play desde cualquier segmento, timestamps a nivel de palabra en palabras_json, barra de estado, catálogo de 10 frases estándar con atajos Ctrl+[1-0], templates de secciones por tipo de audiencia, formulario de encabezado con todos los campos del acta, selector de fuente de audio.
+Funcionalidades: captura de audio en navegador (useAudioCapture, MediaRecorder 16 kHz mono); grabación WAV en servidor (transcription_ws, AUDIO_STORAGE_PATH, actualización de audio_path y audio_duration_seconds); modelo y persistencia de segmentos desde el WebSocket; consolidación de segmentos por speaker; envío de segmentos al cliente (provisionales sin guardar, finales en BD). API GET/PUT segmentos, GET audio.
 
-### Sprint 3 — Semanas 5 y 6: Diccionario jurídico + sugerencias + atajos
+### Sprint 3 — Mejoramiento en tiempo real y diccionario jurídico [Implementado]
 
-El objetivo es que el sistema sugiera correcciones automáticas y el digitador trabaje a máxima velocidad.
+Objetivo: texto mejorado con Claude y sugerencias del diccionario para reducir errores en términos legales.
 
-Funcionalidades: diccionario jurídico de 500+ términos en JSON, motor de fuzzy matching con Levenshtein y comparación fonética, sugerencias inline con SuggestionPlugin (subrayado naranja + popover), aceptar con Tab / rechazar con Esc, keyterm prompting dinámico basado en ranking de errores, indicador de baja confianza con LowConfidenceMark, marcadores con Ctrl+M y BookmarkNode, panel de marcadores, panel de diccionario con búsqueda, todos los atajos de teclado registrados globalmente con KeyboardShortcuts.tsx, etiquetas de hablante específicas del Poder Judicial (15 roles), indicador de prioridad de transcripción por hablante, botón "Pausa inteligente".
+Funcionalidades: RealTimeEnhancementService (enhance_segment, is_sentence_complete); LegalDictionary con fuzzy matching (Levenshtein, Soundex español) y legal_terms.json; legal_keyterms para Deepgram; integración en el flujo WebSocket (mejorar → enviar texto_mejorado → check_segment → enviar sugerencias). Guardar texto_ia y texto_mejorado en BD; no modificar segmentos con editado_por_usuario=true.
 
-### Sprint 4 — Semanas 7 y 8: Pipeline batch + generación del acta
+### Sprint 4 — Canvas TipTap y panel de hablantes [Implementado]
 
-El objetivo es que al finalizar la audiencia el sistema reprocese con máxima precisión y genere el acta oficial.
+Objetivo: editor completo con hablantes, reproductor, marcadores y sugerencias en el Canvas.
 
-Funcionalidades: tarea Celery de pipeline batch completo (faster-whisper + Pyannote + alignment), merge inteligente que respeta ediciones del digitador, vista de propuestas de mejora lado a lado, detección automática de roles con Claude, botón "Generar Acta" con selector de formato, prompt de acta optimizado con los dos formatos reales, ActaEditor (TipTap separado para el acta), versionado de actas, estados del acta (borrador → en_revision → aprobada → exportada).
+Funcionalidades: TranscriptionCanvas con extensiones (SpeakerNode, SegmentMark, LowConfidenceMark, ProvisionalNode); PanelHablantes con roles y etiquetas; ReproductorAudio con wavesurfer.js y sincronización por segmento; marcadores (BookmarkNode, API marcadores) y PanelMarcadores; SuggestionPopover y WordCorrectionPopover (aceptar/rechazar sugerencias). APIs hablantes GET/PUT.
 
-### Sprint 5 — Semanas 9 y 10: Exportación + gestión documental + evaluación
+### Sprint 5 — Estabilización, frases estándar y puesta en producción [Parcial]
 
-El objetivo es que el acta exportada sea indistinguible del formato oficial del Poder Judicial.
+Objetivo: cerrar el MVP con frases estándar, barra de estado, persistencia de ediciones, generación de acta borrador y despliegue.
 
-Funcionalidades: exportación Word Formato A (juzgado unipersonal) y Formato B (sala de apelaciones) con python-docx, exportación PDF con weasyprint, firma digital placeholder compatible con SINOE, metadatos del documento .docx, dashboard completo con filtros y contadores, vista de revisión batch con diff visual, historial de versiones con diff y reversión, subida de audio pregrabado, auditoría completa en audit_log, reconexión automática con buffer de audio, scripts de evaluación (WER, DER, latencia), panel de administración, documentación completa.
+Funcionalidades: **Implementado:** frases estándar (modelo frase_estandar, API frases, AtajosFrases); predicción y análisis contextual (text_prediction, context_analysis, APIs prediction/analysis); BarraEstado; PUT segmentos con editado_por_usuario. **Pendiente:** endpoint POST generar-acta, modelo/tabla actas, tarea generate_acta (actualmente NotImplementedError), editor de acta y vista acta. Docker Compose y despliegue según proyecto.
+
+### Sprints 6–10 (Nivel 2) [Pendiente]
+
+Sprint 6: Mejoras de precisión y reglas de no-añadir palabras. Sprint 7: Procesamiento batch (faster-whisper + Pyannote). Sprint 8: Revisión de propuestas y merge. Sprint 9: Editor de acta y aprobación. Sprint 10: Exportación DOCX/PDF y estabilización Nivel 2.
+
+### Sprints 11–15 (Nivel 3) [Pendiente]
+
+Mejoras UI/UX, corpus y aprendizaje del sistema, cierre, capacitación y soporte post-lanzamiento.
 
 ---
 
