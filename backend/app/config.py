@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     AUDIO_RETENTION_DAYS: int = 30
 
     # ── General ──────────────────────────────────────────
+    # Dokploy: CORS_ORIGINS = URL del frontend (ej. https://app.tudominio.com).
+    # Varios orígenes separados por coma: "https://app.com,https://www.app.com"
     ENVIRONMENT: str = "development"
     CORS_ORIGINS: str = "http://localhost:3000"
 

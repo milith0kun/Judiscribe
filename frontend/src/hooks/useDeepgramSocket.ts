@@ -6,9 +6,8 @@
 
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { useCanvasStore } from '@/stores/canvasStore'
+import { wsBaseUrl } from '@/lib/urls'
 import type { TranscriptMessage, Segmento, SuggestionMessage } from '@/types'
-
-const WS_BASE = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
 
 export function useDeepgramSocket(audienciaId: string) {
     const [isConnected, setIsConnected] = useState(false)
@@ -32,9 +31,10 @@ export function useDeepgramSocket(audienciaId: string) {
         const token =
             typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
         const path = `/ws/transcripcion/${audienciaId}`
+        const base = typeof window !== 'undefined' ? wsBaseUrl() : (process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000')
         const url = token
-            ? `${WS_BASE}${path}?token=${encodeURIComponent(token)}`
-            : `${WS_BASE}${path}`
+            ? `${base}${path}?token=${encodeURIComponent(token)}`
+            : `${base}${path}`
         const ws = new WebSocket(url)
         wsRef.current = ws
 

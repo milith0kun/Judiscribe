@@ -7,8 +7,7 @@
  * - Detección de códigos de expediente
  * - Análisis de estructura de párrafos
  */
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+import { apiBaseUrl } from './urls'
 
 export interface PredictionResult {
     suggestion: string | null
@@ -48,7 +47,7 @@ export async function fetchSuggestion(
     speakerId?: string
 ): Promise<string | null> {
     try {
-        const response = await fetch(`${API_BASE}/api/prediction/suggest`, {
+        const response = await fetch(`${apiBaseUrl()}/api/prediction/suggest`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -81,7 +80,7 @@ export async function analyzeText(
     speakerId?: string
 ): Promise<PredictionResult | null> {
     try {
-        const response = await fetch(`${API_BASE}/api/prediction/suggest`, {
+        const response = await fetch(`${apiBaseUrl()}/api/prediction/suggest`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -112,7 +111,7 @@ export async function capitalizeNames(text: string): Promise<{
     changes: NameDetection[]
 } | null> {
     try {
-        const response = await fetch(`${API_BASE}/api/prediction/capitalize`, {
+        const response = await fetch(`${apiBaseUrl()}/api/prediction/capitalize`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -139,7 +138,7 @@ export async function detectExpedientes(text: string): Promise<{
     count: number
 } | null> {
     try {
-        const response = await fetch(`${API_BASE}/api/prediction/detect-expediente`, {
+        const response = await fetch(`${apiBaseUrl()}/api/prediction/detect-expediente`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

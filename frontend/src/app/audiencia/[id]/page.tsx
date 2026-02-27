@@ -25,6 +25,7 @@ import BarraEstado from '@/components/status/BarraEstado'
 import PanelMarcadores from '@/components/markers/PanelMarcadores'
 import AtajosFrases from '@/components/shortcuts/AtajosFrases'
 import api from '@/lib/api'
+import { apiBaseUrl } from '@/lib/urls'
 import type { Audiencia } from '@/types'
 
 /* ── Types ──────────────────────────────────────────── */
@@ -184,7 +185,7 @@ export default function PaginaTranscripcion() {
     }
 
     const audioUrl = audiencia.audio_path
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/audiencias/${audienciaId}/audio`
+        ? `${apiBaseUrl()}/api/audiencias/${audienciaId}/audio`
         : null
 
     /* ── Render ──────────────────────────────────────── */
